@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Workout Execution Test - AI Catching Coach</title>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <link rel="stylesheet" href="WorkoutExecution.css">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #0A0A0A;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .test-container {
+            width: 100%;
+            min-height: 100vh;
+        }
+        
+        .test-header {
+            background: #1E1E1E;
+            border-bottom: 1px solid #333;
+            padding: 20px;
+            text-align: center;
+            color: #FFFFFF;
+        }
+        
+        .test-header h1 {
+            margin: 0;
+            font-size: 24px;
+            color: #00E676;
+        }
+        
+        .test-header p {
+            margin: 8px 0 0 0;
+            color: #B0B0B0;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+
+        // Sample workout data (matching your AI generation format)
+        const sampleWorkout = {
+            id: "workout_123",
+            title: "Personalized Catching Session",
+            primaryFocus: "Receiving Mechanics",
+            totalDuration: 30, // 30 minutes
+            phases: [
+                {
+                    type: "warmup",
+                    name: "Warm-Up",
+                    duration: 3,
+                    drills: [
+                        {
+                            id: "drill_1",
+                            name: "Dynamic Catching Warm-Up",
+                            category: "Receiving",
+                            equipment: ["Tennis balls", "Catching gear"],
+                            instructions: "Start in a comfortable catching stance. Have a partner or coach toss tennis balls at varying heights and locations. Focus on smooth glove movement and proper receiving technique. Start slow and gradually increase speed.",
+                            coachingNotes: "Keep your glove relaxed and eyes focused on the ball. This drill prepares your hands and eyes for the main workout."
+                        }
+                    ]
+                },
+                {
+                    type: "main_work",
+                    name: "Primary Focus - Receiving",
+                    duration: 15,
+                    drills: [
+                        {
+                            id: "drill_2",
+                            name: "Framing Fundamentals",
+                            category: "Receiving",
+                            equipment: ["Baseball", "Home plate", "Catching gear"],
+                            instructions: "Set up behind home plate in proper catching stance. Have pitcher throw strikes on the corners of the zone. Focus on receiving the ball with soft hands and subtle movements to present strikes as strikes.",
+                            coachingNotes: "The key is minimal glove movement after the catch. Think 'stick it' rather than 'grab it'. Your glove should barely move once the ball hits it."
+                        },
+                        {
+                            id: "drill_3",
+                            name: "Low Pitch Receiving",
+                            category: "Receiving",
+                            equipment: ["Baseball", "Home plate", "Catching gear"],
+                            instructions: "Focus specifically on low strikes. Get your glove down early and receive the ball with your palm facing up. Work on turning borderline low pitches into strikes through proper presentation.",
+                            coachingNotes: "Don't stab at low pitches. Get down with the pitch and receive it smoothly. Your thumb should be pointing down on low pitches."
+                        }
+                    ]
+                },
+                {
+                    type: "secondary_work",
+                    name: "Secondary Skills",
+                    duration: 8,
+                    drills: [
+                        {
+                            id: "drill_4",
+                            name: "Quick Release Throwing",
+                            category: "Throwing",
+                            equipment: ["Baseball", "Bases", "Catching gear"],
+                            instructions: "Practice your throwing mechanics with emphasis on quick release. Work on clean transfers from glove to hand and efficient footwork. Aim for second base with accuracy and speed.",
+                            coachingNotes: "Focus on a clean exchange - ball from glove to throwing hand should be one smooth motion. Your feet should already be moving as you catch the ball."
+                        }
+                    ]
+                },
+                {
+                    type: "education",
+                    name: "Mental Game",
+                    duration: 4,
+                    drills: [
+                        {
+                            id: "drill_5",
+                            name: "Pitch Calling Strategy",
+                            category: "Education",
+                            equipment: ["None"],
+                            instructions: "Study different count situations and discuss pitch selection strategy. Review common scenarios: 0-2 counts, 3-1 counts, runners in scoring position. Practice calling pitches based on batter tendencies.",
+                            coachingNotes: "Think like a chess player - always be two pitches ahead. Consider the batter's strengths, weaknesses, and the game situation."
+                        }
+                    ]
+                }
+            ]
+        };
+
+        // WorkoutExecution Component (simplified for testing)
+        const WorkoutExecution = ({ workout, onWorkoutComplete, onWorkoutExit }) => {
+            const [currentPhaseIndex, setCurrentPhaseIndex] = useState(0);
+            const [currentDrillIndex, setCurrentDrillIndex] = useState(0);
+            const [phaseTimeRemaining, setPhaseTimeRemaining] = useState(0);
+            const [totalTimeElapsed, setTotalTimeElapsed] = useState(0);
+            const [isRunning, setIsRunning] = useState(false);
+            const [isPaused, setIsPaused] = useState(false);
+            const [showDrillInstructions, setShowDrillInstructions] = useState(true);
+            const [completedDrills, setCompletedDrills] = useState(new Set());
+
+            const timerRef = useRef(null);
+
+            const currentPhase = workout.phases[currentPhaseIndex];
+            const currentDrill = currentPhase?.drills[currentDrillIndex];
+            const totalPhases = workout.phases.length;
+            const totalWorkoutTime = workout.totalDuration * 60;
+
+            const getPhaseIcon = (phaseType) => {
+                const icons = {
+                    'warmup': '🔥',
+                    'main_work': '💪',
+                    'secondary_work': '⚙️',
+                    'education': '🧠',
+                    'video_review': '📹',
+                    'cooldown': '🧘'
+                };
+                return icons[phaseType] || '⚙️';
+            };
+
+            const getPhaseColor = (phaseType) => {
+                const colors = {
+                    'warmup': '#FF6F00',
+                    'main_work': '#00E676',
+                    'secondary_work': '#1565C0',
+                    'education': '#9C27B0',
+                    'video_review': '#666666',
+                    'cooldown': '#8D6E63'
+                };
+                return colors[phaseType] || '#1565C0';
+            };
+
+            useEffect(() => {
+                if (currentPhase) {
+                    setPhaseTimeRemaining(currentPhase.duration * 60);
+                    setCurrentDrillIndex(0);
+                    setShowDrillInstructions(true);
+                }
+            }, [currentPhaseIndex, currentPhase]);
+
+            useEffect(() => {
+                if (isRunning && !isPaused) {
+                    timerRef.current = setInterval(() => {
+                        setTotalTimeElapsed(prev => prev + 1);
+                        setPhaseTimeRemaining(prev => {
+                            if (prev <= 1) {
+                                handlePhaseComplete();
+                                return 0;
+                            }
+                            return prev - 1;
+                        });
+                    }, 1000);
+                } else {
+                    clearInterval(timerRef.current);
+                }
+
+                return () => clearInterval(timerRef.current);
+            }, [isRunning, isPaused]);
+
+            const startWorkout = () => {
+                setIsRunning(true);
+                setIsPaused(false);
+            };
+
+            const togglePause = () => {
+                setIsPaused(!isPaused);
+            };
+
+            const handleDrillComplete = () => {
+                const drillKey = `${currentPhaseIndex}-${currentDrillIndex}`;
+                setCompletedDrills(prev => new Set([...prev, drillKey]));
+                
+                if (currentDrillIndex < currentPhase.drills.length - 1) {
+                    setCurrentDrillIndex(currentDrillIndex + 1);
+                    setShowDrillInstructions(true);
+                } else {
+                    setShowDrillInstructions(false);
+                }
+            };
+
+            const handlePhaseComplete = () => {
+                if (currentPhaseIndex < totalPhases - 1) {
+                    setCurrentPhaseIndex(currentPhaseIndex + 1);
+                } else {
+                    handleWorkoutComplete();
+                }
+            };
+
+            const handleWorkoutComplete = () => {
+                setIsRunning(false);
+                alert("Workout Complete! Great job on your training session.");
+            };
+
+            const skipDrill = () => {
+                if (currentDrillIndex < currentPhase.drills.length - 1) {
+                    setCurrentDrillIndex(currentDrillIndex + 1);
+                    setShowDrillInstructions(true);
+                }
+            };
+
+            const skipPhase = () => {
+                if (currentPhaseIndex < totalPhases - 1) {
+                    setCurrentPhaseIndex(currentPhaseIndex + 1);
+                }
+            };
+
+            const formatTime = (seconds) => {
+                const mins = Math.floor(seconds / 60);
+                const secs = seconds % 60;
+                return `${mins}:${secs.toString().padStart(2, '0')}`;
+            };
+
+            const overallProgress = ((totalTimeElapsed / totalWorkoutTime) * 100).toFixed(1);
+
+            return (
+                <div className="workout-execution">
+                    <div className="workout-header">
+                        <div className="workout-title">
+                            <h2>{workout.title}</h2>
+                            <p className="workout-focus">Focus: {workout.primaryFocus}</p>
+                        </div>
+                        <div className="workout-controls">
+                            <button 
+                                className="btn-secondary" 
+                                onClick={() => alert("Exit workout")}
+                                disabled={isRunning && !isPaused}
+                            >
+                                Exit
+                            </button>
+                            {!isRunning ? (
+                                <button className="btn-primary" onClick={startWorkout}>
+                                    Start Workout
+                                </button>
+                            ) : (
+                                <button 
+                                    className={`btn-${isPaused ? 'primary' : 'secondary'}`}
+                                    onClick={togglePause}
+                                >
+                                    {isPaused ? 'Resume' : 'Pause'}
+                                </button>
+                            )}
+                        </div>
+                    </div>
+
+                    <div className="progress-section">
+                        <div className="overall-progress">
+                            <div className="progress-label">
+                                <span>Overall Progress</span>
+                                <span>{formatTime(totalTimeElapsed)} / {formatTime(totalWorkoutTime)}</span>
+                            </div>
+                            <div className="progress-bar">
+                                <div 
+                                    className="progress-fill" 
+                                    style={{ width: `${overallProgress}%` }}
+                                ></div>
+                            </div>
+                            <span className="progress-percentage">{overallProgress}%</span>
+                        </div>
+
+                        <div className="phase-progress">
+                            <div className="phase-indicator">
+                                <span className="phase-icon" style={{ color: getPhaseColor(currentPhase?.type) }}>
+                                    {getPhaseIcon(currentPhase?.type)}
+                                </span>
+                                <span className="phase-name">{currentPhase?.name}</span>
+                                <span className="phase-timer">{formatTime(phaseTimeRemaining)}</span>
+                            </div>
+                            <div className="phase-steps">
+                                Phase {currentPhaseIndex + 1} of {totalPhases} • 
+                                Drill {currentDrillIndex + 1} of {currentPhase?.drills.length}
+                            </div>
+                        </div>
+                    </div>
+
+                    {currentDrill && (
+                        <div className="current-drill-section">
+                            <div className="drill-header">
+                                <h3>{currentDrill.name}</h3>
+                                <div className="drill-meta">
+                                    <span className="drill-category">{currentDrill.category}</span>
+                                    <span className="drill-equipment">
+                                        Equipment: {currentDrill.equipment.join(', ')}
+                                    </span>
+                                </div>
+                            </div>
+
+                            {showDrillInstructions && (
+                                <div className="drill-instructions">
+                                    <h4>Instructions:</h4>
+                                    <p>{currentDrill.instructions}</p>
+                                    
+                                    {currentDrill.coachingNotes && (
+                                        <div className="coaching-notes">
+                                            <h4>Coaching Notes:</h4>
+                                            <p>{currentDrill.coachingNotes}</p>
+                                        </div>
+                                    )}
+
+                                    <div className="drill-actions">
+                                        <button 
+                                            className="btn-primary" 
+                                            onClick={handleDrillComplete}
+                                            disabled={!isRunning || isPaused}
+                                        >
+                                            Complete Drill
+                                        </button>
+                                        <button 
+                                            className="btn-secondary" 
+                                            onClick={skipDrill}
+                                            disabled={!isRunning || isPaused}
+                                        >
+                                            Skip Drill
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+
+                            {!showDrillInstructions && currentDrillIndex === currentPhase.drills.length - 1 && (
+                                <div className="phase-complete">
+                                    <h4>Phase Complete!</h4>
+                                    <p>Great work on the {currentPhase.name} phase.</p>
+                                    <button 
+                                        className="btn-primary" 
+                                        onClick={handlePhaseComplete}
+                                        disabled={!isRunning || isPaused}
+                                    >
+                                        Continue to Next Phase
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    <div className="phase-overview">
+                        <h4>Today's Workout Phases</h4>
+                        <div className="phases-list">
+                            {workout.phases.map((phase, index) => (
+                                <div 
+                                    key={index}
+                                    className={`phase-item ${index === currentPhaseIndex ? 'active' : ''} ${index < currentPhaseIndex ? 'completed' : ''}`}
+                                >
+                                    <span className="phase-icon" style={{ color: getPhaseColor(phase.type) }}>
+                                        {getPhaseIcon(phase.type)}
+                                    </span>
+                                    <div className="phase-info">
+                                        <span className="phase-name">{phase.name}</span>
+                                        <span className="phase-duration">{phase.duration} min</span>
+                                    </div>
+                                    {index < currentPhaseIndex && (
+                                        <span className="phase-status">✓</span>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    <div className="quick-controls">
+                        <button 
+                            className="btn-tertiary" 
+                            onClick={skipPhase}
+                            disabled={!isRunning || isPaused || currentPhaseIndex >= totalPhases - 1}
+                        >
+                            Skip Phase
+                        </button>
+                        <button 
+                            className="btn-danger" 
+                            onClick={handleWorkoutComplete}
+                            disabled={!isRunning}
+                        >
+                            End Workout
+                        </button>
+                    </div>
+                </div>
+            );
+        };
+
+        // Test App Component
+        const TestApp = () => {
+            return (
+                <div className="test-container">
+                    <div className="test-header">
+                        <h1>AI Catching Coach - Workout Execution Test</h1>
+                        <p>Testing the live training interface with realistic workout data</p>
+                    </div>
+                    <WorkoutExecution 
+                        workout={sampleWorkout}
+                        onWorkoutComplete={(data) => console.log("Workout completed:", data)}
+                        onWorkoutExit={() => console.log("Workout exited")}
+                    />
+                </div>
+            );
+        };
+
+        // Render the test app
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<TestApp />);
+    </script>
+</body>
+</html>

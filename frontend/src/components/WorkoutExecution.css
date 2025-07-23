@@ -1,0 +1,522 @@
+/* WorkoutExecution.css - Live Training Interface Styles */
+
+.workout-execution {
+    background: #0A0A0A;
+    color: #FFFFFF;
+    min-height: 100vh;
+    padding: 20px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  }
+  
+  /* Header Section */
+  .workout-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #1E1E1E;
+    border: 1px solid #333;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 24px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  }
+  
+  .workout-title h2 {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 700;
+    color: #FFFFFF;
+  }
+  
+  .workout-focus {
+    margin: 4px 0 0 0;
+    font-size: 14px;
+    color: #00E676;
+    font-weight: 500;
+  }
+  
+  .workout-controls {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+  }
+  
+  /* Button Styles */
+  .btn-primary {
+    background: #00E676;
+    color: #0A0A0A;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 8px rgba(0, 230, 118, 0.3);
+  }
+  
+  .btn-primary:hover {
+    background: #00D96F;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 230, 118, 0.4);
+  }
+  
+  .btn-primary:disabled {
+    background: #444;
+    color: #999;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
+  
+  .btn-secondary {
+    background: #1E1E1E;
+    color: #FFFFFF;
+    border: 1px solid #555;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  
+  .btn-secondary:hover {
+    background: #2A2A2A;
+    border-color: #777;
+    transform: translateY(-1px);
+  }
+  
+  .btn-secondary:disabled {
+    background: #333;
+    color: #666;
+    border-color: #444;
+    cursor: not-allowed;
+    transform: none;
+  }
+  
+  .btn-tertiary {
+    background: transparent;
+    color: #B0B0B0;
+    border: 1px solid #555;
+    padding: 10px 20px;
+    border-radius: 6px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  
+  .btn-tertiary:hover {
+    color: #FFFFFF;
+    border-color: #777;
+    background: #1A1A1A;
+  }
+  
+  .btn-tertiary:disabled {
+    color: #666;
+    border-color: #444;
+    cursor: not-allowed;
+  }
+  
+  .btn-danger {
+    background: #FF3D00;
+    color: #FFFFFF;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  
+  .btn-danger:hover {
+    background: #E53935;
+    transform: translateY(-1px);
+  }
+  
+  .btn-danger:disabled {
+    background: #444;
+    color: #999;
+    cursor: not-allowed;
+    transform: none;
+  }
+  
+  /* Progress Section */
+  .progress-section {
+    background: #1E1E1E;
+    border: 1px solid #333;
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 24px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  }
+  
+  .overall-progress {
+    margin-bottom: 24px;
+  }
+  
+  .progress-label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+    font-size: 14px;
+    color: #B0B0B0;
+  }
+  
+  .progress-bar {
+    width: 100%;
+    height: 8px;
+    background: #333;
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 8px;
+  }
+  
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #00E676, #00D96F);
+    border-radius: 4px;
+    transition: width 0.3s ease;
+  }
+  
+  .progress-percentage {
+    font-size: 12px;
+    color: #00E676;
+    font-weight: 600;
+  }
+  
+  .phase-progress {
+    border-top: 1px solid #333;
+    padding-top: 20px;
+  }
+  
+  .phase-indicator {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 8px;
+  }
+  
+  .phase-icon {
+    font-size: 24px;
+    width: 32px;
+    text-align: center;
+  }
+  
+  .phase-name {
+    font-size: 18px;
+    font-weight: 600;
+    color: #FFFFFF;
+    flex: 1;
+  }
+  
+  .phase-timer {
+    font-size: 20px;
+    font-weight: 700;
+    color: #00E676;
+    background: #121212;
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: 1px solid #333;
+    font-family: 'Courier New', monospace;
+  }
+  
+  .phase-steps {
+    font-size: 14px;
+    color: #B0B0B0;
+    margin-left: 44px;
+  }
+  
+  /* Current Drill Section */
+  .current-drill-section {
+    background: #1E1E1E;
+    border: 1px solid #333;
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 24px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  }
+  
+  .drill-header {
+    margin-bottom: 20px;
+  }
+  
+  .drill-header h3 {
+    margin: 0 0 8px 0;
+    font-size: 22px;
+    font-weight: 700;
+    color: #FFFFFF;
+  }
+  
+  .drill-meta {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    font-size: 14px;
+  }
+  
+  .drill-category {
+    background: #1565C0;
+    color: #FFFFFF;
+    padding: 4px 12px;
+    border-radius: 16px;
+    font-weight: 500;
+  }
+  
+  .drill-equipment {
+    color: #B0B0B0;
+  }
+  
+  .drill-instructions {
+    background: #121212;
+    border: 1px solid #333;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+  }
+  
+  .drill-instructions h4 {
+    margin: 0 0 12px 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: #00E676;
+  }
+  
+  .drill-instructions p {
+    margin: 0 0 16px 0;
+    line-height: 1.6;
+    color: #FFFFFF;
+  }
+  
+  .coaching-notes {
+    background: #1A1A1A;
+    border: 1px solid #444;
+    border-radius: 6px;
+    padding: 16px;
+    margin: 16px 0;
+  }
+  
+  .coaching-notes h4 {
+    margin: 0 0 8px 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: #FF6F00;
+  }
+  
+  .coaching-notes p {
+    margin: 0;
+    font-size: 14px;
+    color: #E0E0E0;
+    line-height: 1.5;
+  }
+  
+  .drill-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 20px;
+  }
+  
+  .phase-complete {
+    background: #121212;
+    border: 2px solid #00E676;
+    border-radius: 8px;
+    padding: 24px;
+    text-align: center;
+  }
+  
+  .phase-complete h4 {
+    margin: 0 0 8px 0;
+    font-size: 18px;
+    color: #00E676;
+  }
+  
+  .phase-complete p {
+    margin: 0 0 20px 0;
+    color: #B0B0B0;
+  }
+  
+  /* Phase Overview */
+  .phase-overview {
+    background: #1E1E1E;
+    border: 1px solid #333;
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 24px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  }
+  
+  .phase-overview h4 {
+    margin: 0 0 16px 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: #FFFFFF;
+  }
+  
+  .phases-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .phase-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    background: #121212;
+    border: 1px solid #333;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+  }
+  
+  .phase-item.active {
+    background: #1A1A1A;
+    border-color: #00E676;
+    box-shadow: 0 0 0 2px rgba(0, 230, 118, 0.2);
+  }
+  
+  .phase-item.completed {
+    background: #0D4A1A;
+    border-color: #00E676;
+  }
+  
+  .phase-item.completed .phase-icon {
+    color: #00E676 !important;
+  }
+  
+  .phase-info {
+    flex: 1;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .phase-name {
+    font-size: 16px;
+    font-weight: 500;
+    color: #FFFFFF;
+  }
+  
+  .phase-duration {
+    font-size: 14px;
+    color: #B0B0B0;
+  }
+  
+  .phase-status {
+    color: #00E676;
+    font-size: 18px;
+    font-weight: 700;
+  }
+  
+  /* Quick Controls */
+  .quick-controls {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    padding: 20px;
+    background: #1E1E1E;
+    border: 1px solid #333;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  }
+  
+  /* Responsive Design */
+  @media (max-width: 768px) {
+    .workout-execution {
+      padding: 16px;
+    }
+    
+    .workout-header {
+      flex-direction: column;
+      gap: 16px;
+      text-align: center;
+    }
+    
+    .workout-controls {
+      justify-content: center;
+    }
+    
+    .phase-indicator {
+      flex-direction: column;
+      gap: 8px;
+      text-align: center;
+    }
+    
+    .phase-steps {
+      margin-left: 0;
+      text-align: center;
+    }
+    
+    .drill-actions {
+      flex-direction: column;
+    }
+    
+    .drill-meta {
+      flex-direction: column;
+      gap: 8px;
+      align-items: flex-start;
+    }
+    
+    .phase-info {
+      flex-direction: column;
+      gap: 4px;
+      align-items: flex-start;
+    }
+    
+    .quick-controls {
+      flex-direction: column;
+    }
+  }
+  
+  /* Animation for smooth transitions */
+  @keyframes slideIn {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  .current-drill-section {
+    animation: slideIn 0.3s ease;
+  }
+  
+  .phase-complete {
+    animation: slideIn 0.3s ease;
+  }
+  
+  /* Pulse animation for active elements */
+  @keyframes pulse {
+    0% {
+      box-shadow: 0 0 0 0 rgba(0, 230, 118, 0.4);
+    }
+    70% {
+      box-shadow: 0 0 0 10px rgba(0, 230, 118, 0);
+    }
+    100% {
+      box-shadow: 0 0 0 0 rgba(0, 230, 118, 0);
+    }
+  }
+  
+  .phase-item.active {
+    animation: pulse 2s infinite;
+  }
+  
+  /* Timer glow effect */
+  .phase-timer {
+    animation: glow 2s ease-in-out infinite alternate;
+  }
+  
+  @keyframes glow {
+    from {
+      box-shadow: 0 0 5px rgba(0, 230, 118, 0.2);
+    }
+    to {
+      box-shadow: 0 0 20px rgba(0, 230, 118, 0.4);
+    }
+  }

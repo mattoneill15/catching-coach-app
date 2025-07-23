@@ -1,0 +1,562 @@
+/* App.css - Main App Structure & Dashboard Styles */
+
+/* Global App Container */
+.app {
+    background: #0A0A0A;
+    color: #FFFFFF;
+    min-height: 100vh;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    overflow-x: hidden;
+  }
+  
+  /* Loading State */
+  .loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background: #0A0A0A;
+    color: #00E676;
+    font-size: 18px;
+    font-weight: 600;
+  }
+  
+  /* Onboarding Container */
+  .onboarding-container {
+    width: 100%;
+    min-height: 100vh;
+    background: #0A0A0A;
+  }
+  
+  /* Training Container */
+  .training-container {
+    width: 100%;
+    min-height: 100vh;
+    background: #0A0A0A;
+  }
+  
+  /* Main App Layout */
+  .main-app {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    background: #0A0A0A;
+  }
+  
+  .app-content {
+    flex: 1;
+    padding-bottom: 80px; /* Space for bottom navigation */
+    overflow-y: auto;
+  }
+  
+  /* Dashboard Styles */
+  .dashboard {
+    padding: 20px;
+    max-width: 600px;
+    margin: 0 auto;
+    width: 100%;
+  }
+  
+  /* Dashboard Header */
+  .dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 32px;
+    padding: 20px 0;
+  }
+  
+  .welcome-section h1 {
+    margin: 0;
+    font-size: 28px;
+    font-weight: 700;
+    color: #FFFFFF;
+    line-height: 1.2;
+  }
+  
+  .welcome-section .date {
+    margin: 4px 0 0 0;
+    font-size: 16px;
+    color: #B0B0B0;
+    font-weight: 400;
+  }
+  
+  .logout-btn {
+    background: transparent;
+    color: #B0B0B0;
+    border: 1px solid #555;
+    padding: 10px 16px;
+    border-radius: 6px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  
+  .logout-btn:hover {
+    color: #FFFFFF;
+    border-color: #777;
+    background: #1A1A1A;
+  }
+  
+  /* Stats Grid */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+  
+  .stat-card {
+    background: #1E1E1E;
+    border: 1px solid #333;
+    border-radius: 12px;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  }
+  
+  .stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+  }
+  
+  .stat-card.streak {
+    border-color: #FF6F00;
+    background: linear-gradient(135deg, #1E1E1E 0%, #2A1A0A 100%);
+  }
+  
+  .stat-card.workouts {
+    border-color: #00E676;
+    background: linear-gradient(135deg, #1E1E1E 0%, #0A2A1A 100%);
+  }
+  
+  .stat-card.weekly {
+    border-color: #1565C0;
+    background: linear-gradient(135deg, #1E1E1E 0%, #0A1A2A 100%);
+  }
+  
+  .stat-icon {
+    font-size: 32px;
+    line-height: 1;
+  }
+  
+  .stat-card.streak .stat-icon {
+    color: #FF6F00;
+  }
+  
+  .stat-card.workouts .stat-icon {
+    color: #00E676;
+  }
+  
+  .stat-card.weekly .stat-icon {
+    color: #1565C0;
+  }
+  
+  .stat-content h3 {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 700;
+    color: #FFFFFF;
+    line-height: 1;
+  }
+  
+  .stat-content p {
+    margin: 4px 0 0 0;
+    font-size: 14px;
+    color: #B0B0B0;
+    font-weight: 500;
+  }
+  
+  /* Main Action Section */
+  .main-action {
+    background: linear-gradient(135deg, #1E1E1E 0%, #2A2A2A 100%);
+    border: 1px solid #333;
+    border-radius: 16px;
+    padding: 32px;
+    text-align: center;
+    margin-bottom: 32px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+  }
+  
+  .main-action h2 {
+    margin: 0 0 8px 0;
+    font-size: 24px;
+    font-weight: 700;
+    color: #FFFFFF;
+  }
+  
+  .main-action p {
+    margin: 0 0 24px 0;
+    font-size: 16px;
+    color: #B0B0B0;
+    line-height: 1.5;
+  }
+  
+  .start-training-btn {
+    background: linear-gradient(135deg, #00E676 0%, #00D96F 100%);
+    color: #0A0A0A;
+    border: none;
+    padding: 16px 32px;
+    border-radius: 12px;
+    font-size: 18px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    box-shadow: 0 4px 16px rgba(0, 230, 118, 0.3);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  
+  .start-training-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px rgba(0, 230, 118, 0.4);
+    background: linear-gradient(135deg, #00D96F 0%, #00CC64 100%);
+  }
+  
+  .start-training-btn:active {
+    transform: translateY(-1px);
+  }
+  
+  .btn-icon {
+    font-size: 20px;
+  }
+  
+  /* Recent Activity Section */
+  .recent-activity {
+    background: #1E1E1E;
+    border: 1px solid #333;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  }
+  
+  .recent-activity h3 {
+    margin: 0 0 20px 0;
+    font-size: 20px;
+    font-weight: 600;
+    color: #FFFFFF;
+  }
+  
+  .activity-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  
+  .activity-item {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px;
+    background: #121212;
+    border: 1px solid #333;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+  }
+  
+  .activity-item:hover {
+    background: #1A1A1A;
+    border-color: #555;
+    transform: translateX(4px);
+  }
+  
+  .activity-icon {
+    font-size: 24px;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #2A2A2A;
+    border-radius: 8px;
+    flex-shrink: 0;
+  }
+  
+  .activity-content {
+    flex: 1;
+  }
+  
+  .activity-content p {
+    margin: 0;
+    line-height: 1.4;
+  }
+  
+  .activity-content strong {
+    color: #FFFFFF;
+    font-weight: 600;
+  }
+  
+  .activity-meta {
+    font-size: 14px;
+    color: #B0B0B0;
+    margin-top: 4px;
+  }
+  
+  /* Bottom Navigation */
+  .bottom-navigation {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: #1E1E1E;
+    border-top: 1px solid #333;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    padding: 12px 0;
+    z-index: 1000;
+    box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.3);
+  }
+  
+  .nav-tab {
+    background: none;
+    border: none;
+    color: #B0B0B0;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    flex: 1;
+    max-width: 80px;
+  }
+  
+  .nav-tab:hover {
+    color: #FFFFFF;
+    background: #2A2A2A;
+  }
+  
+  .nav-tab.active {
+    color: #00E676;
+    background: #0A2A1A;
+  }
+  
+  .nav-tab.active .nav-icon {
+    transform: scale(1.1);
+  }
+  
+  .nav-icon {
+    font-size: 24px;
+    transition: transform 0.2s ease;
+  }
+  
+  .nav-label {
+    font-size: 12px;
+    font-weight: 500;
+    text-align: center;
+  }
+  
+  /* Placeholder Tab Content */
+  .training-hub,
+  .progress-dashboard,
+  .user-profile {
+    padding: 40px 20px;
+    text-align: center;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+  
+  .training-hub h2,
+  .progress-dashboard h2,
+  .user-profile h2 {
+    margin: 0 0 16px 0;
+    font-size: 28px;
+    font-weight: 700;
+    color: #FFFFFF;
+  }
+  
+  .training-hub p,
+  .progress-dashboard p,
+  .user-profile p {
+    margin: 0 0 32px 0;
+    font-size: 16px;
+    color: #B0B0B0;
+    line-height: 1.5;
+  }
+  
+  .btn-primary {
+    background: #00E676;
+    color: #0A0A0A;
+    border: none;
+    padding: 16px 32px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 8px rgba(0, 230, 118, 0.3);
+  }
+  
+  .btn-primary:hover {
+    background: #00D96F;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 230, 118, 0.4);
+  }
+  
+  .btn-secondary {
+    background: #1E1E1E;
+    color: #FFFFFF;
+    border: 1px solid #555;
+    padding: 16px 32px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  
+  .btn-secondary:hover {
+    background: #2A2A2A;
+    border-color: #777;
+    transform: translateY(-2px);
+  }
+  
+  /* Responsive Design */
+  @media (max-width: 768px) {
+    .dashboard {
+      padding: 16px;
+    }
+    
+    .dashboard-header {
+      flex-direction: column;
+      gap: 16px;
+      text-align: center;
+    }
+    
+    .stats-grid {
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+    
+    .main-action {
+      padding: 24px 20px;
+    }
+    
+    .main-action h2 {
+      font-size: 20px;
+    }
+    
+    .start-training-btn {
+      font-size: 16px;
+      padding: 14px 24px;
+    }
+    
+    .recent-activity {
+      padding: 20px 16px;
+    }
+    
+    .activity-item {
+      padding: 12px;
+    }
+    
+    .welcome-section h1 {
+      font-size: 24px;
+    }
+    
+    .app-content {
+      padding-bottom: 90px; /* More space on mobile */
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .dashboard {
+      padding: 12px;
+    }
+    
+    .stats-grid {
+      gap: 8px;
+    }
+    
+    .stat-card {
+      padding: 16px;
+    }
+    
+    .stat-content h3 {
+      font-size: 20px;
+    }
+    
+    .main-action {
+      padding: 20px 16px;
+    }
+    
+    .start-training-btn {
+      width: 100%;
+      justify-content: center;
+    }
+    
+    .bottom-navigation {
+      padding: 8px 0;
+    }
+    
+    .nav-tab {
+      padding: 6px 8px;
+    }
+    
+    .nav-icon {
+      font-size: 20px;
+    }
+    
+    .nav-label {
+      font-size: 11px;
+    }
+  }
+  
+  /* Smooth animations for state transitions */
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  .dashboard,
+  .training-hub,
+  .progress-dashboard,
+  .user-profile {
+    animation: fadeIn 0.3s ease;
+  }
+  
+  /* Interactive feedback */
+  .stat-card,
+  .activity-item,
+  .start-training-btn {
+    will-change: transform;
+  }
+  
+  /* Focus states for accessibility */
+  .nav-tab:focus,
+  .start-training-btn:focus,
+  .logout-btn:focus {
+    outline: 2px solid #00E676;
+    outline-offset: 2px;
+  }
+  
+  /* Success animations */
+  @keyframes pulse {
+    0% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.05);
+    }
+    100% {
+      transform: scale(1);
+    }
+  }
+  
+  .start-training-btn:active {
+    animation: pulse 0.2s ease;
+  }

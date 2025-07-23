@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Catching Coach - Auth Screen Test</title>
+    <style>
+        /* AuthScreen.css - Professional Dark Sports App Theme */
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+        }
+
+        .auth-screen {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #0A0A0A 0%, #1A1A1A 50%, #121212 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .auth-container {
+            background: #1E1E1E;
+            border-radius: 16px;
+            padding: 40px;
+            width: 100%;
+            max-width: 440px;
+            box-shadow: 
+                0 20px 40px rgba(0, 0, 0, 0.4),
+                0 8px 16px rgba(0, 0, 0, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        /* App Branding */
+        .auth-header {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .app-logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .logo-icon {
+            font-size: 32px;
+            background: linear-gradient(135deg, #00E676, #1565C0);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .app-logo h1 {
+            color: #FFFFFF;
+            font-size: 28px;
+            font-weight: 700;
+            margin: 0;
+            letter-spacing: -0.5px;
+        }
+
+        .app-tagline {
+            color: #B0B0B0;
+            font-size: 16px;
+            margin: 0;
+            font-weight: 400;
+        }
+
+        /* Form Toggle */
+        .form-toggle {
+            display: flex;
+            background: #121212;
+            border-radius: 12px;
+            padding: 4px;
+            margin-bottom: 28px;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .toggle-btn {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: #B0B0B0;
+            font-size: 15px;
+            font-weight: 600;
+            padding: 12px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .toggle-btn.active {
+            background: #00E676;
+            color: #0A0A0A;
+            box-shadow: 0 2px 8px rgba(0, 230, 118, 0.3);
+        }
+
+        .toggle-btn:hover:not(.active) {
+            color: #FFFFFF;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        /* Form Styling */
+        .auth-form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .name-fields {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .input-group label {
+            color: #FFFFFF;
+            font-size: 14px;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+        }
+
+        .input-group input {
+            background: #121212;
+            border: 1.5px solid rgba(255, 255, 255, 0.12);
+            border-radius: 8px;
+            padding: 14px 16px;
+            color: #FFFFFF;
+            font-size: 16px;
+            transition: all 0.2s ease;
+            outline: none;
+        }
+
+        .input-group input::placeholder {
+            color: #666666;
+        }
+
+        .input-group input:focus {
+            border-color: #00E676;
+            box-shadow: 0 0 0 3px rgba(0, 230, 118, 0.1);
+            background: #0F0F0F;
+        }
+
+        .input-group input.error {
+            border-color: #FF4444;
+            box-shadow: 0 0 0 3px rgba(255, 68, 68, 0.1);
+        }
+
+        .error-text {
+            color: #FF4444;
+            font-size: 13px;
+            font-weight: 500;
+            margin-top: 4px;
+        }
+
+        .general-error {
+            background: rgba(255, 68, 68, 0.1);
+            border: 1px solid rgba(255, 68, 68, 0.3);
+            border-radius: 8px;
+            padding: 12px 16px;
+            color: #FF6B6B;
+            font-size: 14px;
+            font-weight: 500;
+            text-align: center;
+        }
+
+        /* Submit Button */
+        .submit-btn {
+            background: linear-gradient(135deg, #00E676, #00C853);
+            border: none;
+            border-radius: 12px;
+            padding: 16px 24px;
+            color: #0A0A0A;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-top: 8px;
+            letter-spacing: 0.3px;
+            box-shadow: 0 4px 12px rgba(0, 230, 118, 0.3);
+        }
+
+        .submit-btn:hover:not(:disabled) {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(0, 230, 118, 0.4);
+            background: linear-gradient(135deg, #00F57C, #00D95F);
+        }
+
+        .submit-btn:active {
+            transform: translateY(0);
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Loading State */
+        .loading-content {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+        }
+
+        .spinner {
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(10, 10, 10, 0.3);
+            border-left-color: #0A0A0A;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Footer */
+        .auth-footer {
+            text-align: center;
+            margin-top: 32px;
+            padding-top: 24px;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .auth-footer p {
+            color: #B0B0B0;
+            font-size: 14px;
+            margin: 0;
+        }
+
+        .link-btn {
+            background: none;
+            border: none;
+            color: #00E676;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+
+        .link-btn:hover {
+            color: #00F57C;
+            text-decoration: underline;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 480px) {
+            .auth-container {
+                padding: 28px 24px;
+                margin: 16px;
+            }
+            
+            .name-fields {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .app-logo h1 {
+                font-size: 24px;
+            }
+            
+            .logo-icon {
+                font-size: 28px;
+            }
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="auth-screen">
+        <div class="auth-container">
+            <!-- App branding -->
+            <div class="auth-header">
+                <div class="app-logo">
+                    <div class="logo-icon">⚾</div>
+                    <h1>Catching Coach</h1>
+                </div>
+                <p class="app-tagline" id="tagline">
+                    Welcome back, catcher
+                </p>
+            </div>
+
+            <!-- Auth form -->
+            <form class="auth-form" id="authForm">
+                <div class="form-toggle">
+                    <button type="button" class="toggle-btn active" id="loginBtn">
+                        Login
+                    </button>
+                    <button type="button" class="toggle-btn" id="signupBtn">
+                        Sign Up
+                    </button>
+                </div>
+
+                <!-- Sign up only fields -->
+                <div class="name-fields hidden" id="nameFields">
+                    <div class="input-group">
+                        <label for="firstName">First Name</label>
+                        <input
+                            id="firstName"
+                            type="text"
+                            placeholder="Enter your first name"
+                        />
+                    </div>
+
+                    <div class="input-group">
+                        <label for="lastName">Last Name</label>
+                        <input
+                            id="lastName"
+                            type="text"
+                            placeholder="Enter your last name"
+                        />
+                    </div>
+                </div>
+
+                <!-- Email field -->
+                <div class="input-group">
+                    <label for="email">Email</label>
+                    <input
+                        id="email"
+                        type="email"
+                        placeholder="Enter your email"
+                        value="catcher@example.com"
+                    />
+                </div>
+
+                <!-- Password field -->
+                <div class="input-group">
+                    <label for="password">Password</label>
+                    <input
+                        id="password"
+                        type="password"
+                        placeholder="Enter your password"
+                        value="password123"
+                    />
+                </div>
+
+                <!-- Confirm password field (signup only) -->
+                <div class="input-group hidden" id="confirmPasswordGroup">
+                    <label for="confirmPassword">Confirm Password</label>
+                    <input
+                        id="confirmPassword"
+                        type="password"
+                        placeholder="Confirm your password"
+                    />
+                </div>
+
+                <!-- Submit button -->
+                <button type="submit" class="submit-btn" id="submitBtn">
+                    Sign In
+                </button>
+            </form>
+
+            <!-- Footer -->
+            <div class="auth-footer">
+                <p>
+                    <span id="footerText">Don't have an account? </span>
+                    <button type="button" class="link-btn" id="toggleLink">
+                        Sign up
+                    </button>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Toggle between login and signup
+        const loginBtn = document.getElementById('loginBtn');
+        const signupBtn = document.getElementById('signupBtn');
+        const nameFields = document.getElementById('nameFields');
+        const confirmPasswordGroup = document.getElementById('confirmPasswordGroup');
+        const submitBtn = document.getElementById('submitBtn');
+        const tagline = document.getElementById('tagline');
+        const footerText = document.getElementById('footerText');
+        const toggleLink = document.getElementById('toggleLink');
+        const authForm = document.getElementById('authForm');
+
+        let isLogin = true;
+
+        function toggleMode() {
+            isLogin = !isLogin;
+            
+            if (isLogin) {
+                // Switch to login mode
+                loginBtn.classList.add('active');
+                signupBtn.classList.remove('active');
+                nameFields.classList.add('hidden');
+                confirmPasswordGroup.classList.add('hidden');
+                submitBtn.textContent = 'Sign In';
+                tagline.textContent = 'Welcome back, catcher';
+                footerText.textContent = "Don't have an account? ";
+                toggleLink.textContent = 'Sign up';
+            } else {
+                // Switch to signup mode
+                signupBtn.classList.add('active');
+                loginBtn.classList.remove('active');
+                nameFields.classList.remove('hidden');
+                confirmPasswordGroup.classList.remove('hidden');
+                submitBtn.textContent = 'Create Account';
+                tagline.textContent = 'Start your journey to elite catching';
+                footerText.textContent = "Already have an account? ";
+                toggleLink.textContent = 'Sign in';
+            }
+        }
+
+        loginBtn.addEventListener('click', () => {
+            if (!isLogin) toggleMode();
+        });
+
+        signupBtn.addEventListener('click', () => {
+            if (isLogin) toggleMode();
+        });
+
+        toggleLink.addEventListener('click', toggleMode);
+
+        // Form submission with loading state
+        authForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            // Show loading state
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = `
+                <span class="loading-content">
+                    <span class="spinner"></span>
+                    ${isLogin ? 'Signing In...' : 'Creating Account...'}
+                </span>
+            `;
+            
+            // Simulate API call
+            setTimeout(() => {
+                alert(`${isLogin ? 'Login' : 'Signup'} successful! This would now proceed to the ${isLogin ? 'dashboard' : 'intake questionnaire'}.`);
+                
+                // Reset button
+                submitBtn.disabled = false;
+                submitBtn.textContent = isLogin ? 'Sign In' : 'Create Account';
+            }, 2000);
+        });
+
+        // Focus effects for inputs
+        document.querySelectorAll('input').forEach(input => {
+            input.addEventListener('focus', () => {
+                input.parentElement.style.transform = 'scale(1.02)';
+            });
+            
+            input.addEventListener('blur', () => {
+                input.parentElement.style.transform = 'scale(1)';
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Complete App Test - AI Catching Coach</title>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <link rel="stylesheet" href="App.css">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #0A0A0A;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .test-header {
+            background: #1E1E1E;
+            border-bottom: 1px solid #333;
+            padding: 16px 20px;
+            text-align: center;
+            color: #FFFFFF;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1001;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+        
+        .test-header h1 {
+            margin: 0;
+            font-size: 18px;
+            color: #00E676;
+        }
+        
+        .test-header p {
+            margin: 4px 0 0 0;
+            color: #B0B0B0;
+            font-size: 14px;
+        }
+        
+        .test-controls {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            z-index: 1002;
+            background: #1E1E1E;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+        
+        .test-controls button {
+            background: #00E676;
+            color: #0A0A0A;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            margin: 2px;
+            transition: all 0.2s ease;
+        }
+        
+        .test-controls button:hover {
+            background: #00D96F;
+        }
+        
+        .test-controls button.secondary {
+            background: #555;
+            color: #FFFFFF;
+        }
+        
+        .test-controls button.secondary:hover {
+            background: #777;
+        }
+        
+        .app-test-container {
+            padding-top: 140px;
+        }
+        
+        @media (max-width: 768px) {
+            .test-controls {
+                position: relative;
+                top: 0;
+                right: 0;
+                margin: 80px 20px 20px 20px;
+                display: flex;
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+            
+            .app-test-container {
+                padding-top: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="test-header">
+        <h1>AI Catching Coach - Complete App Test</h1>
+        <p>Testing the full app experience with navigation and state management</p>
+    </div>
+    
+    <div class="test-controls">
+        <button onclick="testApp.resetToAuth()">Reset to Auth</button>
+        <button onclick="testApp.skipToMain()">Skip to Dashboard</button>
+        <button onclick="testApp.testTrainingFlow()">Test Training</button>
+        <button onclick="testApp.clearStorage()" class="secondary">Clear Storage</button>
+    </div>
+    
+    <div class="app-test-container">
+        <div id="root"></div>
+    </div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+
+        // Test App Component with full functionality
+        const TestApp = () => {
+            const [currentUser, setCurrentUser] = useState(null);
+            const [userProfile, setUserProfile] = useState(null);
+            const [skillsAssessment, setSkillsAssessment] = useState(null);
+            const [currentWorkout, setCurrentWorkout] = useState(null);
+            const [activeTab, setActiveTab] = useState('home');
+            const [appState, setAppState] = useState('auth');
+            const [onboardingStep, setOnboardingStep] = useState('intake');
+            const [trainingStep, setTrainingStep] = useState('checkin');
+
+            // Expose test functions globally
+            window.testApp = {
+                resetToAuth: () => {
+                    setCurrentUser(null);
+                    setUserProfile(null);
+                    setSkillsAssessment(null);
+                    setCurrentWorkout(null);
+                    setActiveTab('home');
+                    setAppState('auth');
+                    localStorage.removeItem('catching_coach_user');
+                },
+                skipToMain: () => {
+                    const mockUser = {
+                        id: 'user_123',
+                        name: 'Alex Rodriguez',
+                        email: 'alex@email.com',
+                        profileComplete: true
+                    };
+                    setCurrentUser(mockUser);
+                    setAppState('main');
+                    setActiveTab('home');
+                },
+                testTrainingFlow: () => {
+                    const mockUser = { id: 'user_123', name: 'Alex Rodriguez', profileComplete: true };
+                    setCurrentUser(mockUser);
+                    setAppState('training');
+                    setTrainingStep('checkin');
+                },
+                clearStorage: () => {
+                    localStorage.clear();
+                    location.reload();
+                }
+            };
+
+            // Authentication handlers
+            const handleLogin = (userData) => {
+                setCurrentUser(userData);
+                localStorage.setItem('catching_coach_user', JSON.stringify(userData));
+                
+                if (userData.profileComplete) {
+                    setAppState('main');
+                } else {
+                    setAppState('onboarding');
+                    setOnboardingStep('intake');
+                }
+            };
+
+            const handleLogout = () => {
+                setCurrentUser(null);
+                setUserProfile(null);
+                setSkillsAssessment(null);
+                setCurrentWorkout(null);
+                setActiveTab('home');
+                setAppState('auth');
+                localStorage.removeItem('catching_coach_user');
+            };
+
+            // Training flow handlers
+            const handleStartTraining = () => {
+                setAppState('training');
+                setTrainingStep('checkin');
+                setActiveTab('training');
+            };
+
+            const handleCheckinComplete = (checkinData, generatedWorkout) => {
+                // Mock workout generation
+                const mockWorkout = {
+                    id: "workout_" + Date.now(),
+                    title: "Personalized Catching Session",
+                    primaryFocus: "Receiving Mechanics",
+                    totalDuration: 30,
+                    phases: [
+                        {
+                            type: "warmup",
+                            name: "Warm-Up",
+                            duration: 3,
+                            drills: [{
+                                id: "drill_1",
+                                name: "Dynamic Catching Warm-Up",
+                                category: "Receiving",
+                                equipment: ["Tennis balls", "Catching gear"],
+                                instructions: "Start in a comfortable catching stance...",
+                                coachingNotes: "Keep your glove relaxed and eyes focused..."
+                            }]
+                        },
+                        {
+                            type: "main_work",
+                            name: "Primary Focus - Receiving",
+                            duration: 15,
+                            drills: [{
+                                id: "drill_2",
+                                name: "Framing Fundamentals",
+                                category: "Receiving",
+                                equipment: ["Baseball", "Home plate", "Catching gear"],
+                                instructions: "Set up behind home plate in proper catching stance...",
+                                coachingNotes: "The key is minimal glove movement after the catch..."
+                            }]
+                        }
+                    ]
+                };
+                setCurrentWorkout(mockWorkout);
+                setTrainingStep('display');
+            };
+
+            const handleStartWorkout = () => {
+                setTrainingStep('execution');
+            };
+
+            const handleWorkoutComplete = (workoutData) => {
+                console.log('Workout completed:', workoutData);
+                setAppState('main');
+                setTrainingStep('checkin');
+                setCurrentWorkout(null);
+                setActiveTab('home');
+            };
+
+            const handleWorkoutExit = () => {
+                setAppState('main');
+                setTrainingStep('checkin');
+                setCurrentWorkout(null);
+                setActiveTab('home');
+            };
+
+            // Navigation handlers
+            const handleTabChange = (tab) => {
+                if (appState === 'main') {
+                    setActiveTab(tab);
+                }
+            };
+
+            // Render different app states
+            const renderContent = () => {
+                switch (appState) {
+                    case 'auth':
+                        return <AuthScreen onLogin={handleLogin} onSignup={handleLogin} />;
+
+                    case 'onboarding':
+                        return (
+                            <div className="onboarding-container">
+                                <OnboardingPlaceholder />
+                            </div>
+                        );
+
+                    case 'training':
+                        return (
+                            <div className="training-container">
+                                {trainingStep === 'checkin' && (
+                                    <DailyCheckinMock 
+                                        onComplete={handleCheckinComplete}
+                                        onCancel={() => setAppState('main')}
+                                    />
+                                )}
+                                {trainingStep === 'display' && (
+                                    <WorkoutDisplayMock 
+                                        workout={currentWorkout}
+                                        onStartWorkout={handleStartWorkout}
+                                        onBackToDashboard={() => setAppState('main')}
+                                    />
+                                )}
+                            </div>
+                        );
+
+                    case 'main':
+                        return (
+                            <div className="main-app">
+                                <div className="app-content">
+                                    {renderMainContent()}
+                                </div>
+                                <BottomNavigation 
+                                    activeTab={activeTab}
+                                    onTabChange={handleTabChange}
+                                />
+                            </div>
+                        );
+
+                    default:
+                        return <div className="loading">Loading...</div>;
+                }
+            };
+
+            // Render main app content based on active tab
+            const renderMainContent = () => {
+                switch (activeTab) {
+                    case 'home':
+                        return (
+                            <Dashboard 
+                                user={currentUser}
+                                userProfile={userProfile}
+                                onStartTraining={handleStartTraining}
+                                onLogout={handleLogout}
+                            />
+                        );
+
+                    case 'training':
+                        return <TrainingHub onStartNewWorkout={handleStartTraining} />;
+
+                    case 'progress':
+                        return <ProgressDashboard user={currentUser} />;
+
+                    case 'profile':
+                        return <UserProfile user={currentUser} onLogout={handleLogout} />;
+
+                    default:
+                        return <Dashboard user={currentUser} onStartTraining={handleStartTraining} />;
+                }
+            };
+
+            return <div className="app">{renderContent()}</div>;
+        };
+
+        // Mock Auth Screen
+        const AuthScreen = ({ onLogin }) => {
+            const [isLogin, setIsLogin] = useState(true);
+            const [email, setEmail] = useState('');
+            const [password, setPassword] = useState('');
+            const [name, setName] = useState('');
+
+            const handleSubmit = (e) => {
+                e.preventDefault();
+                const userData = {
+                    id: 'user_' + Date.now(),
+                    name: name || 'Test User',
+                    email: email || 'test@example.com',
+                    profileComplete: true // Skip onboarding for testing
+                };
+                onLogin(userData);
+            };
+
+            return (
+                <div style={{
+                    background: '#0A0A0A',
+                    minHeight: '100vh',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    padding: '20px'
+                }}>
+                    <div style={{
+                        background: '#1E1E1E',
+                        border: '1px solid #333',
+                        borderRadius: '12px',
+                        padding: '40px',
+                        maxWidth: '400px',
+                        width: '100%',
+                        textAlign: 'center'
+                    }}>
+                        <h2 style={{ color: '#FFFFFF', marginBottom: '24px' }}>
+                            {isLogin ? 'Welcome Back' : 'Join AI Catching Coach'}
+                        </h2>
+                        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                            {!isLogin && (
+                                <input
+                                    type="text"
+                                    placeholder="Full Name"
+                                    value={name}
+                                    onChange={(e) => setName(e.target.value)}
+                                    style={{
+                                        background: '#121212',
+                                        border: '1px solid #333',
+                                        borderRadius: '8px',
+                                        padding: '12px',
+                                        color: '#FFFFFF',
+                                        fontSize: '16px'
+                                    }}
+                                />
+                            )}
+                            <input
+                                type="email"
+                                placeholder="Email"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                style={{
+                                    background: '#121212',
+                                    border: '1px solid #333',
+                                    borderRadius: '8px',
+                                    padding: '12px',
+                                    color: '#FFFFFF',
+                                    fontSize: '16px'
+                                }}
+                            />
+                            <input
+                                type="password"
+                                placeholder="Password"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                style={{
+                                    background: '#121212',
+                                    border: '1px solid #333',
+                                    borderRadius: '8px',
+                                    padding: '12px',
+                                    color: '#FFFFFF',
+                                    fontSize: '16px'
+                                }}
+                            />
+                            <button
+                                type="submit"
+                                style={{
+                                    background: '#00E676',
+                                    color: '#0A0A0A',
+                                    border: 'none',
+                                    padding: '16px',
+                                    borderRadius: '8px',
+                                    fontSize: '16px',
+                                    fontWeight: '600',
+                                    cursor: 'pointer',
+                                    marginTop: '8px'
+                                }}
+                            >
+                                {isLogin ? 'Sign In' : 'Create Account'}
+                            </button>
+                        </form>
+                        <p style={{ color: '#B0B0B0', marginTop: '20px' }}>
+                            {isLogin ? "Don't have an account?" : "Already have an account?"}
+                            <button
+                                onClick={() => setIsLogin(!isLogin)}
+                                style={{
+                                    background: 'none',
+                                    border: 'none',
+                                    color: '#00E676',
+                                    marginLeft: '8px',
+                                    cursor: 'pointer',
+                                    textDecoration: 'underline'
+                                }}
+                            >
+                                {isLogin ? 'Sign Up' : 'Sign In'}
+                            </button>
+                        </p>
+                    </div>
+                </div>
+            );
+        };
+
+        // Dashboard Component (using the same from App.js)
+        const Dashboard = ({ user, userProfile, onStartTraining, onLogout }) => {
+            const [currentStreak, setCurrentStreak] = useState(3);
+            const [totalWorkouts, setTotalWorkouts] = useState(12);
+            const [weeklyGoal, setWeeklyGoal] = useState(4);
+            const [weeklyProgress, setWeeklyProgress] = useState(2);
+
+            const today = new Date().toLocaleDateString('en-US', { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+            });
+
+            return (
+                <div className="dashboard">
+                    <div className="dashboard-header">
+                        <div className="welcome-section">
+                            <h1>Welcome back, {user?.name || 'Catcher'}!</h1>
+                            <p className="date">{today}</p>
+                        </div>
+                        <button className="logout-btn" onClick={onLogout}>
+                            Logout
+                        </button>
+                    </div>
+
+                    <div className="stats-grid">
+                        <div className="stat-card streak">
+                            <div className="stat-icon">🔥</div>
+                            <div className="stat-content">
+                                <h3>{currentStreak}</h3>
+                                <p>Day Streak</p>
+                            </div>
+                        </div>
+
+                        <div className="stat-card workouts">
+                            <div className="stat-icon">💪</div>
+                            <div className="stat-content">
+                                <h3>{totalWorkouts}</h3>
+                                <p>Total Workouts</p>
+                            </div>
+                        </div>
+
+                        <div className="stat-card weekly">
+                            <div className="stat-icon">📊</div>
+                            <div className="stat-content">
+                                <h3>{weeklyProgress}/{weeklyGoal}</h3>
+                                <p>This Week</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="main-action">
+                        <h2>Ready to Train?</h2>
+                        <p>Get your personalized catching workout powered by AI</p>
+                        <button className="start-training-btn" onClick={onStartTraining}>
+                            <span className="btn-icon">🚀</span>
+                            Start Training Session
+                        </button>
+                    </div>
+
+                    <div className="recent-activity">
+                        <h3>Recent Activity</h3>
+                        <div className="activity-list">
+                            <div className="activity-item">
+                                <div className="activity-icon">💪</div>
+                                <div className="activity-content">
+                                    <p><strong>Receiving Focus Workout</strong></p>
+                                    <p className="activity-meta">Yesterday • 30 minutes • Completed</p>
+                                </div>
+                            </div>
+                            <div className="activity-item">
+                                <div className="activity-icon">⚙️</div>
+                                <div className="activity-content">
+                                    <p><strong>Throwing Mechanics Session</strong></p>
+                                    <p className="activity-meta">2 days ago • 25 minutes • Completed</p>
+                                </div>
+                            </div>
+                            <div className="activity-item">
+                                <div className="activity-icon">🧠</div>
+                                <div className="activity-content">
+                                    <p><strong>Game Management Training</strong></p>
+                                    <p className="activity-meta">3 days ago • 20 minutes • Completed</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        // Bottom Navigation Component
+        const BottomNavigation = ({ activeTab, onTabChange }) => {
+            const tabs = [
+                { id: 'home', label: 'Home', icon: '🏠' },
+                { id: 'training', label: 'Training', icon: '💪' },
+                { id: 'progress', label: 'Progress', icon: '📊' },
+                { id: 'profile', label: 'Profile', icon: '👤' }
+            ];
+
+            return (
+                <nav className="bottom-navigation">
+                    {tabs.map((tab) => (
+                        <button
+                            key={tab.id}
+                            className={`nav-tab ${activeTab === tab.id ? 'active' : ''}`}
+                            onClick={() => onTabChange(tab.id)}
+                        >
+                            <span className="nav-icon">{tab.icon}</span>
+                            <span className="nav-label">{tab.label}</span>
+                        </button>
+                    ))}
+                </nav>
+            );
+        };
+
+        // Placeholder components for other tabs
+        const TrainingHub = ({ onStartNewWorkout }) => (
+            <div className="training-hub">
+                <h2>Training Hub</h2>
+                <p>Your workout history and training plans</p>
+                <button className="btn-primary" onClick={onStartNewWorkout}>
+                    Start New Workout
+                </button>
+            </div>
+        );
+
+        const ProgressDashboard = ({ user }) => (
+            <div className="progress-dashboard">
+                <h2>Progress Dashboard</h2>
+                <p>Track your improvement over time</p>
+                <div style={{ background: '#1E1E1E', border: '1px solid #333', borderRadius: '8px', padding: '20px', marginTop: '20px' }}>
+                    <p style={{ color: '#B0B0B0', margin: 0 }}>📊 Analytics coming soon...</p>
+                </div>
+            </div>
+        );
+
+        const UserProfile = ({ user, onLogout }) => (
+            <div className="user-profile">
+                <h2>Profile Settings</h2>
+                <p>Manage your account and preferences</p>
+                <div style={{ background: '#1E1E1E', border: '1px solid #333', borderRadius: '8px', padding: '20px', marginBottom: '20px' }}>
+                    <p style={{ color: '#FFFFFF', margin: '0 0 8px 0' }}><strong>Name:</strong> {user?.name}</p>
+                    <p style={{ color: '#FFFFFF', margin: 0 }}><strong>Email:</strong> {user?.email}</p>
+                </div>
+                <button className="btn-secondary" onClick={onLogout}>
+                    Logout
+                </button>
+            </div>
+        );
+
+        // Mock components for testing
+        const OnboardingPlaceholder = () => (
+            <div style={{ padding: '40px', textAlign: 'center', color: '#FFFFFF' }}>
+                <h2>Onboarding Flow</h2>
+                <p style={{ color: '#B0B0B0' }}>Intake Questionnaire → Skills Assessment</p>
+            </div>
+        );
+
+        const DailyCheckinMock = ({ onComplete, onCancel }) => (
+            <div style={{ 
+                background: 'rgba(0,0,0,0.8)', 
+                position: 'fixed', 
+                top: 0, 
+                left: 0, 
+                right: 0, 
+                bottom: 0, 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'center',
+                zIndex: 1000
+            }}>
+                <div style={{ 
+                    background: '#1E1E1E', 
+                    border: '1px solid #333', 
+                    borderRadius: '12px', 
+                    padding: '30px',
+                    maxWidth: '400px',
+                    textAlign: 'center'
+                }}>
+                    <h3 style={{ color: '#FFFFFF', marginBottom: '20px' }}>Daily Check-in</h3>
+                    <p style={{ color: '#B0B0B0', marginBottom: '24px' }}>Mock daily check-in for testing</p>
+                    <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
+                        <button 
+                            onClick={() => onComplete({}, {})}
+                            style={{
+                                background: '#00E676',
+                                color: '#0A0A0A',
+                                border: 'none',
+                                padding: '12px 24px',
+                                borderRadius: '8px',
+                                cursor: 'pointer'
+                            }}
+                        >
+                            Generate Workout
+                        </button>
+                        <button 
+                            onClick={onCancel}
+                            style={{
+                                background: '#555',
+                                color: '#FFFFFF',
+                                border: 'none',
+                                padding: '12px 24px',
+                                borderRadius: '8px',
+                                cursor: 'pointer'
+                            }}
+                        >
+                            Cancel
+                        </button>
+                    </div>
+                </div>
+            </div>
+        );
+
+        const WorkoutDisplayMock = ({ workout, onStartWorkout, onBackToDashboard }) => (
+            <div style={{ padding: '20px', color: '#FFFFFF', textAlign: 'center' }}>
+                <h2>{workout?.title}</h2>
+                <p style={{ color: '#B0B0B0', marginBottom: '30px' }}>
+                    Focus: {workout?.primaryFocus} • {workout?.totalDuration} minutes
+                </p>
+                <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
+                    <button 
+                        onClick={onStartWorkout}
+                        style={{
+                            background: '#00E676',
+                            color: '#0A0A0A',
+                            border: 'none',
+                            padding: '16px 32px',
+                            borderRadius: '8px',
+                            fontSize: '16px',
+                            fontWeight: '600',
+                            cursor: 'pointer'
+                        }}
+                    >
+                        Start Workout
+                    </button>
+                    <button 
+                        onClick={onBackToDashboard}
+                        style={{
+                            background: '#555',
+                            color: '#FFFFFF',
+                            border: 'none',
+                            padding: '16px 32px',
+                            borderRadius: '8px',
+                            cursor: 'pointer'
+                        }}
+                    >
+                        Back to Dashboard
+                    </button>
+                </div>
+            </div>
+        );
+
+        // Render the test app
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<TestApp />);
+    </script>
+</body>
+</html>

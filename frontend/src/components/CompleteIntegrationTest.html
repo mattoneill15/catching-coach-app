@@ -1,0 +1,2265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Complete Integration Test - AI Catching Coach</title>
+    <style>
+        /* Import all component styles */
+        
+        /* Global App Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #0A0A0A;
+            color: #FFFFFF;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        .app-container {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background: linear-gradient(135deg, #0A0A0A 0%, #1A1A1A 100%);
+        }
+
+        .main-content {
+            flex: 1;
+            padding: 20px;
+            padding-bottom: 80px;
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        /* Dashboard Styles */
+        .dashboard-header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 30px 20px;
+            background: linear-gradient(135deg, #1E1E1E 0%, #2A2A2A 100%);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .dashboard-title {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #00E676;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0, 230, 118, 0.3);
+        }
+
+        .dashboard-subtitle {
+            font-size: 1.2rem;
+            color: #B0B0B0;
+            margin-bottom: 5px;
+        }
+
+        .dashboard-date {
+            font-size: 1rem;
+            color: #B0B0B0;
+            opacity: 0.8;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #1E1E1E 0%, #2A2A2A 100%);
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            border: 1px solid #333333;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+        }
+
+        .stat-icon {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #00E676;
+            margin-bottom: 10px;
+        }
+
+        .stat-label {
+            font-size: 1rem;
+            color: #B0B0B0;
+        }
+
+        .training-cta {
+            text-align: center;
+            margin: 40px 0;
+        }
+
+        .start-training-btn {
+            background: linear-gradient(135deg, #00E676 0%, #00C853 100%);
+            color: #000000;
+            border: none;
+            padding: 20px 40px;
+            border-radius: 50px;
+            font-size: 1.3rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0, 230, 118, 0.3);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .start-training-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0, 230, 118, 0.4);
+        }
+
+        /* Bottom Navigation */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(135deg, #1E1E1E 0%, #2A2A2A 100%);
+            padding: 15px 0;
+            box-shadow: 0 -5px 15px rgba(0, 0, 0, 0.3);
+            border-top: 1px solid #333333;
+        }
+
+        .nav-container {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-decoration: none;
+            color: #B0B0B0;
+            transition: color 0.3s ease;
+            padding: 10px;
+            border-radius: 10px;
+        }
+
+        .nav-item.active {
+            color: #00E676;
+            background: rgba(0, 230, 118, 0.1);
+        }
+
+        .nav-item:hover {
+            color: #00E676;
+        }
+
+        .nav-icon {
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+        }
+
+        .nav-label {
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        /* Modal Overlay */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal {
+            background: linear-gradient(135deg, #1E1E1E 0%, #2A2A2A 100%);
+            padding: 30px;
+            border-radius: 20px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 90vh;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+            border: 1px solid #333333;
+            transform: scale(0.9);
+            transition: transform 0.3s ease;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .modal-overlay.active .modal {
+            transform: scale(1);
+        }
+
+        .modal-header {
+            text-align: center;
+            margin-bottom: 25px;
+            flex-shrink: 0;
+        }
+
+        .modal-title {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #00E676;
+            margin-bottom: 10px;
+        }
+
+        .modal-subtitle {
+            color: #B0B0B0;
+            font-size: 1rem;
+        }
+
+        .selection-section {
+            margin-bottom: 25px;
+            flex-shrink: 0;
+        }
+
+        .section-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #FFFFFF;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .time-options {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .time-option {
+            background: #121212;
+            border: 2px solid #333333;
+            padding: 15px;
+            border-radius: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: #FFFFFF;
+        }
+
+        .time-option:hover {
+            border-color: #00E676;
+            background: rgba(0, 230, 118, 0.1);
+        }
+
+        .time-option.selected {
+            border-color: #00E676;
+            background: rgba(0, 230, 118, 0.2);
+        }
+
+        .time-duration {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #00E676;
+            margin-bottom: 5px;
+        }
+
+        .time-label {
+            font-size: 0.9rem;
+            color: #B0B0B0;
+        }
+
+        .equipment-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .equipment-item {
+            background: #121212;
+            border: 2px solid #333333;
+            padding: 12px;
+            border-radius: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: #FFFFFF;
+        }
+
+        .equipment-item:hover {
+            border-color: #00E676;
+            background: rgba(0, 230, 118, 0.1);
+        }
+
+        .equipment-item.selected {
+            border-color: #00E676;
+            background: rgba(0, 230, 118, 0.2);
+        }
+
+        .equipment-item.basic {
+            border-color: #4CAF50;
+        }
+
+        .equipment-item.intermediate {
+            border-color: #FF9800;
+        }
+
+        .equipment-item.advanced {
+            border-color: #9C27B0;
+        }
+
+        .equipment-item.premium {
+            border-color: #F44336;
+        }
+
+        .equipment-icon {
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+        }
+
+        .equipment-name {
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .energy-options {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .energy-option {
+            background: #121212;
+            border: 2px solid #333333;
+            padding: 15px;
+            border-radius: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: #FFFFFF;
+        }
+
+        .energy-option:hover {
+            border-color: #00E676;
+            background: rgba(0, 230, 118, 0.1);
+        }
+
+        .energy-option.selected {
+            border-color: #00E676;
+            background: rgba(0, 230, 118, 0.2);
+        }
+
+        .energy-icon {
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+        }
+
+        .energy-label {
+            font-size: 1rem;
+            font-weight: 500;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-shrink: 0;
+            margin-top: 10px;
+            padding-top: 20px;
+            border-top: 1px solid #333333;
+        }
+
+        .btn {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-cancel {
+            background: #333333;
+            color: #FFFFFF;
+        }
+
+        .btn-cancel:hover {
+            background: #444444;
+        }
+
+        .btn-generate {
+            background: linear-gradient(135deg, #00E676 0%, #00C853 100%);
+            color: #000000;
+        }
+
+        .btn-generate:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 230, 118, 0.3);
+        }
+
+        .btn-generate:disabled {
+            background: #666666;
+            color: #999999;
+            cursor: not-allowed;
+        }
+
+        /* Loading States */
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #333333;
+            border-radius: 50%;
+            border-top-color: #00E676;
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Workout Display Styles */
+        .workout-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            max-height: 100vh;
+            overflow-y: auto;
+            padding-bottom: 100px; /* Extra space for bottom navigation */
+        }
+
+        .workout-header {
+            background: linear-gradient(135deg, #1E1E1E 0%, #2A2A2A 100%);
+            padding: 30px;
+            border-radius: 20px;
+            text-align: center;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .workout-title {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #00E676;
+            margin-bottom: 10px;
+        }
+
+        .workout-subtitle {
+            color: #B0B0B0;
+            font-size: 1.1rem;
+            margin-bottom: 20px;
+        }
+
+        .workout-meta {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            flex-wrap: wrap;
+        }
+
+        .meta-item {
+            text-align: center;
+        }
+
+        .meta-label {
+            font-size: 0.9rem;
+            color: #B0B0B0;
+            margin-bottom: 5px;
+        }
+
+        .meta-value {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #FFFFFF;
+        }
+
+        .ai-note {
+            background: linear-gradient(135deg, #1565C0 0%, #1976D2 100%);
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            border-left: 4px solid #00E676;
+        }
+
+        .ai-note-title {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #FFFFFF;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .ai-note-content {
+            color: #E3F2FD;
+            line-height: 1.6;
+        }
+
+        .workout-phases {
+            margin-bottom: 30px;
+        }
+
+        .phase-item {
+            background: #1E1E1E;
+            border: 1px solid #333333;
+            border-radius: 15px;
+            margin-bottom: 15px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .phase-item:hover {
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .phase-header {
+            padding: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            background: linear-gradient(135deg, #1E1E1E 0%, #2A2A2A 100%);
+        }
+
+        .phase-icon {
+            font-size: 1.5rem;
+            width: 40px;
+            text-align: center;
+        }
+
+        .phase-info {
+            flex: 1;
+        }
+
+        .phase-name {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #FFFFFF;
+            margin-bottom: 5px;
+        }
+
+        .phase-duration {
+            color: #B0B0B0;
+            font-size: 0.9rem;
+        }
+
+        .phase-toggle {
+            font-size: 1.2rem;
+            color: #B0B0B0;
+            transition: transform 0.3s ease;
+        }
+
+        .phase-item.expanded .phase-toggle {
+            transform: rotate(180deg);
+        }
+
+        .phase-content {
+            padding: 0 20px;
+            max-height: 0;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .phase-item.expanded .phase-content {
+            max-height: 1000px;
+            padding: 20px;
+        }
+
+        .drill-item {
+            background: #121212;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            border-left: 4px solid #00E676;
+        }
+
+        .drill-name {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #FFFFFF;
+            margin-bottom: 10px;
+        }
+
+        .drill-description {
+            color: #B0B0B0;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .drill-meta {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .drill-meta-item {
+            font-size: 0.9rem;
+            color: #B0B0B0;
+        }
+
+        .drill-meta-label {
+            font-weight: bold;
+            color: #FFFFFF;
+        }
+
+        .workout-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 30px;
+            padding: 20px;
+            background: linear-gradient(135deg, #0A0A0A 0%, #1A1A1A 100%);
+            border-radius: 15px;
+            position: sticky;
+            bottom: 20px;
+            z-index: 10;
+            box-shadow: 0 -5px 15px rgba(0, 0, 0, 0.3);
+            border: 1px solid #333333;
+        }
+
+        .btn-secondary {
+            background: #333333;
+            color: #FFFFFF;
+        }
+
+        .btn-secondary:hover {
+            background: #444444;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #00E676 0%, #00C853 100%);
+            color: #000000;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 230, 118, 0.3);
+        }
+
+        /* Execution Container Styles */
+        .execution-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            max-height: 100vh;
+            overflow-y: auto;
+            padding-bottom: 100px; /* Extra space for bottom navigation */
+        }
+
+        .execution-header {
+            background: linear-gradient(135deg, #1E1E1E 0%, #2A2A2A 100%);
+            padding: 30px;
+            border-radius: 20px;
+            text-align: center;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .execution-title {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #00E676;
+            margin-bottom: 15px;
+        }
+
+        .timer-display {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin-bottom: 20px;
+        }
+
+        .timer-item {
+            text-align: center;
+        }
+
+        .timer-label {
+            font-size: 0.9rem;
+            color: #B0B0B0;
+            margin-bottom: 5px;
+        }
+
+        .timer-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #00E676;
+            font-family: 'Courier New', monospace;
+        }
+
+        .current-phase {
+            background: #1E1E1E;
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            border-left: 4px solid #00E676;
+        }
+
+        .phase-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #00E676;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .current-drill {
+            background: #121212;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .drill-title {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #FFFFFF;
+            margin-bottom: 10px;
+        }
+
+        .drill-instructions {
+            color: #B0B0B0;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .drill-equipment {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .equipment-tag {
+            background: #333333;
+            color: #FFFFFF;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+        }
+
+        .execution-controls {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: linear-gradient(135deg, #0A0A0A 0%, #1A1A1A 100%);
+            border-radius: 15px;
+            position: sticky;
+            bottom: 20px;
+            z-index: 10;
+            box-shadow: 0 -5px 15px rgba(0, 0, 0, 0.3);
+            border: 1px solid #333333;
+        }
+
+        .btn-control {
+            padding: 15px 25px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-start {
+            background: linear-gradient(135deg, #00E676 0%, #00C853 100%);
+            color: #000000;
+        }
+
+        .btn-pause {
+            background: #FF9800;
+            color: #000000;
+        }
+
+        .btn-complete {
+            background: #2196F3;
+            color: #FFFFFF;
+        }
+
+        .btn-skip {
+            background: #666666;
+            color: #FFFFFF;
+        }
+
+        .phase-overview {
+            background: #1E1E1E;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+        }
+
+        .overview-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #FFFFFF;
+            margin-bottom: 15px;
+        }
+
+        .phase-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .phase-badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            border: 1px solid #333333;
+        }
+
+        .phase-badge.completed {
+            background: rgba(0, 230, 118, 0.2);
+            border-color: #00E676;
+            color: #00E676;
+        }
+
+        .phase-badge.current {
+            background: rgba(255, 143, 0, 0.2);
+            border-color: #FF8F00;
+            color: #FF8F00;
+        }
+
+        .phase-badge.upcoming {
+            background: rgba(176, 176, 176, 0.1);
+            border-color: #666666;
+            color: #B0B0B0;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .timer-display {
+                flex-direction: column;
+                gap: 20px;
+            }
+            
+            .execution-controls {
+                flex-wrap: wrap;
+            }
+            
+            .btn-control {
+                flex: 1;
+                min-width: 120px;
+            }
+        }
+
+        /* Hide sections initially */
+        .workout-display, .workout-execution, .progress-section, .profile-section {
+            display: none;
+        }
+
+        .workout-display.active, .workout-execution.active, .progress-section.active, .profile-section.active {
+            display: block;
+        }
+
+        /* Progress Section Styles */
+        .progress-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .progress-header {
+            background: linear-gradient(135deg, #1E1E1E 0%, #2A2A2A 100%);
+            padding: 30px;
+            border-radius: 20px;
+            text-align: center;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .progress-title {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #00E676;
+            margin-bottom: 10px;
+        }
+
+        .progress-subtitle {
+            color: #B0B0B0;
+            font-size: 1.1rem;
+        }
+
+        .progress-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .progress-card {
+            background: linear-gradient(135deg, #1E1E1E 0%, #2A2A2A 100%);
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            border: 1px solid #333333;
+        }
+
+        .progress-card-title {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #FFFFFF;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .skill-progress {
+            margin-bottom: 15px;
+        }
+
+        .skill-name {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+        }
+
+        .skill-label {
+            color: #B0B0B0;
+            font-size: 0.9rem;
+        }
+
+        .skill-value {
+            color: #00E676;
+            font-weight: bold;
+        }
+
+        .skill-bar {
+            width: 100%;
+            height: 8px;
+            background: #333333;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .skill-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00E676 0%, #00C853 100%);
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+
+        /* Profile Section Styles */
+        .profile-container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .profile-header {
+            background: linear-gradient(135deg, #1E1E1E 0%, #2A2A2A 100%);
+            padding: 30px;
+            border-radius: 20px;
+            text-align: center;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .profile-title {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #00E676;
+            margin-bottom: 10px;
+        }
+
+        .profile-subtitle {
+            color: #B0B0B0;
+            font-size: 1.1rem;
+        }
+
+        .profile-sections {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .profile-section-card {
+            background: linear-gradient(135deg, #1E1E1E 0%, #2A2A2A 100%);
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            border: 1px solid #333333;
+        }
+
+        .profile-section-title {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #FFFFFF;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .profile-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #333333;
+        }
+
+        .info-label {
+            color: #B0B0B0;
+            font-size: 0.9rem;
+        }
+
+        .info-value {
+            color: #FFFFFF;
+            font-weight: 500;
+        }
+
+        /* Back Button Styles */
+        .back-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: rgba(30, 30, 30, 0.9);
+            color: #FFFFFF;
+            border: 1px solid #333333;
+            padding: 12px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+            font-weight: 500;
+            backdrop-filter: blur(10px);
+            z-index: 100;
+        }
+
+        .back-button:hover {
+            background: rgba(0, 230, 118, 0.2);
+            border-color: #00E676;
+            color: #00E676;
+        }
+
+        .back-button.hidden {
+            opacity: 0;
+            visibility: hidden;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Back Button (shows when not on dashboard) -->
+        <button class="back-button hidden" id="backButton" onclick="goBack()">
+            ← Back
+        </button>
+
+        <!-- Dashboard Section -->
+        <div class="main-content" id="dashboard">
+            <div class="dashboard-header">
+                <h1 class="dashboard-title">🥎 Catching Coach</h1>
+                <p class="dashboard-subtitle">Your AI-Powered Training Companion</p>
+                <p class="dashboard-date">Sunday, July 13, 2025</p>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">🔥</div>
+                    <div class="stat-value">7</div>
+                    <div class="stat-label">Day Streak</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">💪</div>
+                    <div class="stat-value">23</div>
+                    <div class="stat-label">Total Workouts</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">📊</div>
+                    <div class="stat-value">4</div>
+                    <div class="stat-label">This Week</div>
+                </div>
+            </div>
+
+            <div class="training-cta">
+                <button class="start-training-btn" onclick="startTraining()">
+                    Start Training Session
+                </button>
+            </div>
+        </div>
+
+        <!-- Daily Check-in Modal -->
+        <div class="modal-overlay" id="dailyCheckinModal">
+            <div class="modal">
+                <div class="modal-header">
+                    <h2 class="modal-title">Daily Check-in</h2>
+                    <p class="modal-subtitle">Let's customize today's training session</p>
+                </div>
+
+                <div class="selection-section">
+                    <h3 class="section-title">How much time do you have?</h3>
+                    <div class="time-options">
+                        <div class="time-option" data-duration="15">
+                            <div class="time-duration">15 min</div>
+                            <div class="time-label">Quick Session</div>
+                        </div>
+                        <div class="time-option" data-duration="30">
+                            <div class="time-duration">30 min</div>
+                            <div class="time-label">Standard Session</div>
+                        </div>
+                        <div class="time-option" data-duration="45">
+                            <div class="time-duration">45 min</div>
+                            <div class="time-label">Extended Session</div>
+                        </div>
+                        <div class="time-option" data-duration="60">
+                            <div class="time-duration">60+ min</div>
+                            <div class="time-label">Complete Session</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="selection-section">
+                    <h3 class="section-title">Available Equipment</h3>
+                    <div class="equipment-grid">
+                        <div class="equipment-item basic" data-equipment="tennis_balls">
+                            <div class="equipment-icon">🎾</div>
+                            <div class="equipment-name">Tennis Balls</div>
+                        </div>
+                        <div class="equipment-item intermediate" data-equipment="catching_gear">
+                            <div class="equipment-icon">🥎</div>
+                            <div class="equipment-name">Catching Gear</div>
+                        </div>
+                        <div class="equipment-item advanced" data-equipment="home_plate">
+                            <div class="equipment-icon">⚾</div>
+                            <div class="equipment-name">Home Plate</div>
+                        </div>
+                        <div class="equipment-item premium" data-equipment="cones">
+                            <div class="equipment-icon">🔶</div>
+                            <div class="equipment-name">Cones/Targets</div>
+                        </div>
+                        <div class="equipment-item intermediate" data-equipment="wall">
+                            <div class="equipment-icon">🧱</div>
+                            <div class="equipment-name">Wall</div>
+                        </div>
+                        <div class="equipment-item advanced" data-equipment="net">
+                            <div class="equipment-icon">🕳️</div>
+                            <div class="equipment-name">Net/Fence</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="selection-section">
+                    <h3 class="section-title">Energy Level</h3>
+                    <div class="energy-options">
+                        <div class="energy-option" data-energy="low">
+                            <div class="energy-icon">😴</div>
+                            <div class="energy-label">Low</div>
+                        </div>
+                        <div class="energy-option" data-energy="normal">
+                            <div class="energy-icon">😐</div>
+                            <div class="energy-label">Normal</div>
+                        </div>
+                        <div class="energy-option" data-energy="high">
+                            <div class="energy-icon">🔥</div>
+                            <div class="energy-label">High</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-actions">
+                    <button class="btn btn-cancel" onclick="closeDailyCheckin()">Cancel</button>
+                    <button class="btn btn-generate" id="generateWorkoutBtn" onclick="generateWorkout()">
+                        Generate Workout
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Workout Display Section -->
+        <div class="workout-display" id="workoutDisplay">
+                            <div class="workout-container">
+                    <div class="workout-header">
+                        <h1 class="workout-title" id="workoutTitle">Your Personalized Training</h1>
+                        <p class="workout-subtitle" id="workoutSubtitle">AI-Generated Session</p>
+                        <div class="workout-meta">
+                            <div class="meta-item">
+                                <div class="meta-label">Duration</div>
+                                <div class="meta-value" id="workoutDuration">30 min</div>
+                            </div>
+                            <div class="meta-item">
+                                <div class="meta-label">Focus Area</div>
+                                <div class="meta-value" id="workoutFocus">Receiving</div>
+                            </div>
+                            <div class="meta-item">
+                                <div class="meta-label">Equipment</div>
+                                <div class="meta-value" id="workoutEquipment">Basic</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="ai-note">
+                        <div class="ai-note-title">
+                            🤖 AI Coach Notes
+                        </div>
+                        <div class="ai-note-content" id="aiCoachNotes">
+                            Based on your skills assessment, I've identified receiving as your primary focus area. Today's workout emphasizes glove positioning and presentation fundamentals.
+                        </div>
+                    </div>
+
+                    <div class="workout-phases" id="workoutPhases">
+                        <!-- Phases will be populated by JavaScript -->
+                    </div>
+
+                    <div class="workout-actions">
+                        <button class="btn btn-secondary" onclick="regenerateWorkout()">Regenerate</button>
+                        <button class="btn btn-primary" onclick="startWorkoutExecution()">Start Workout</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Progress Section -->
+        <div class="progress-section" id="progressSection">
+            <div class="progress-container">
+                <div class="progress-header">
+                    <h1 class="progress-title">📊 Your Progress</h1>
+                    <p class="progress-subtitle">Track your improvement over time</p>
+                </div>
+
+                <div class="progress-cards">
+                    <div class="progress-card">
+                        <div class="progress-card-title">
+                            🎯 Skills Assessment
+                        </div>
+                        <div class="skill-progress">
+                            <div class="skill-name">
+                                <span class="skill-label">Receiving</span>
+                                <span class="skill-value">4.0/10</span>
+                            </div>
+                            <div class="skill-bar">
+                                <div class="skill-fill" style="width: 40%"></div>
+                            </div>
+                        </div>
+                        <div class="skill-progress">
+                            <div class="skill-name">
+                                <span class="skill-label">Throwing</span>
+                                <span class="skill-value">7.0/10</span>
+                            </div>
+                            <div class="skill-bar">
+                                <div class="skill-fill" style="width: 70%"></div>
+                            </div>
+                        </div>
+                        <div class="skill-progress">
+                            <div class="skill-name">
+                                <span class="skill-label">Blocking</span>
+                                <span class="skill-value">6.0/10</span>
+                            </div>
+                            <div class="skill-bar">
+                                <div class="skill-fill" style="width: 60%"></div>
+                            </div>
+                        </div>
+                        <div class="skill-progress">
+                            <div class="skill-name">
+                                <span class="skill-label">Education</span>
+                                <span class="skill-value">3.5/10</span>
+                            </div>
+                            <div class="skill-bar">
+                                <div class="skill-fill" style="width: 35%"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="progress-card">
+                        <div class="progress-card-title">
+                            📈 Recent Improvement
+                        </div>
+                        <div class="skill-progress">
+                            <div class="skill-name">
+                                <span class="skill-label">This Week</span>
+                                <span class="skill-value">+0.3 avg</span>
+                            </div>
+                            <div class="skill-bar">
+                                <div class="skill-fill" style="width: 30%"></div>
+                            </div>
+                        </div>
+                        <div class="skill-progress">
+                            <div class="skill-name">
+                                <span class="skill-label">This Month</span>
+                                <span class="skill-value">+0.8 avg</span>
+                            </div>
+                            <div class="skill-bar">
+                                <div class="skill-fill" style="width: 80%"></div>
+                            </div>
+                        </div>
+                        <div class="skill-progress">
+                            <div class="skill-name">
+                                <span class="skill-label">Total Sessions</span>
+                                <span class="skill-value">23</span>
+                            </div>
+                        </div>
+                        <div class="skill-progress">
+                            <div class="skill-name">
+                                <span class="skill-label">Current Streak</span>
+                                <span class="skill-value">7 days</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Profile Section -->
+        <div class="profile-section" id="profileSection">
+            <div class="profile-container">
+                <div class="profile-header">
+                    <h1 class="profile-title">👤 Profile</h1>
+                    <p class="profile-subtitle">Matt O'Neill</p>
+                </div>
+
+                <div class="profile-sections">
+                    <div class="profile-section-card">
+                        <div class="profile-section-title">
+                            ⚾ Player Information
+                        </div>
+                        <div class="profile-info">
+                            <div class="info-item">
+                                <span class="info-label">Age</span>
+                                <span class="info-value">19</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Experience Level</span>
+                                <span class="info-value">High School</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Years Catching</span>
+                                <span class="info-value">4</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">School/Team</span>
+                                <span class="info-value">Highland High School</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="profile-section-card">
+                        <div class="profile-section-title">
+                            🎯 Training Goals
+                        </div>
+                        <div class="profile-info">
+                            <div class="info-item">
+                                <span class="info-label">Primary Focus</span>
+                                <span class="info-value">Blocking, Framing</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Preferred Duration</span>
+                                <span class="info-value">30 minutes</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Training Frequency</span>
+                                <span class="info-value">4 times/week</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="profile-section-card">
+                        <div class="profile-section-title">
+                            🛠️ Available Equipment
+                        </div>
+                        <div class="profile-info">
+                            <div class="info-item">
+                                <span class="info-label">Basic</span>
+                                <span class="info-value">Tennis Balls</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Intermediate</span>
+                                <span class="info-value">Catching Gear, Wall</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Advanced</span>
+                                <span class="info-value">Home Plate, Net</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="workout-execution" id="workoutExecution">
+            <div class="execution-container">
+                <div class="execution-header">
+                    <h1 class="execution-title">Live Training Session</h1>
+                    <div class="timer-display">
+                        <div class="timer-item">
+                            <div class="timer-label">Overall Progress</div>
+                            <div class="timer-value" id="overallTimer">25:00</div>
+                        </div>
+                        <div class="timer-item">
+                            <div class="timer-label">Current Phase</div>
+                            <div class="timer-value" id="phaseTimer">3:00</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="phase-overview">
+                    <div class="overview-title">Workout Progress</div>
+                    <div class="phase-list" id="phaseProgress">
+                        <!-- Phase badges will be populated by JavaScript -->
+                    </div>
+                </div>
+
+                <div class="current-phase">
+                    <div class="phase-title" id="currentPhaseTitle">
+                        🔥 Warm-Up Phase
+                    </div>
+                    <div class="current-drill">
+                        <div class="drill-title" id="currentDrillTitle">Basic Glove Positioning</div>
+                        <div class="drill-instructions" id="currentDrillInstructions">
+                            Start in a comfortable squat position. Hold your glove steady with the pocket facing the incoming ball. Focus on keeping your glove still and letting the ball come to you.
+                        </div>
+                        <div class="drill-equipment" id="currentDrillEquipment">
+                            <span class="equipment-tag">Tennis Balls</span>
+                            <span class="equipment-tag">Glove</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="execution-controls">
+                    <button class="btn btn-control btn-start" id="startBtn" onclick="toggleWorkout()">Start</button>
+                    <button class="btn btn-control btn-pause" id="pauseBtn" onclick="toggleWorkout()" style="display: none;">Pause</button>
+                    <button class="btn btn-control btn-complete" onclick="completeDrill()">Complete Drill</button>
+                    <button class="btn btn-control btn-skip" onclick="skipDrill()">Skip Drill</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom Navigation -->
+        <div class="bottom-nav">
+            <div class="nav-container">
+                <a href="#" class="nav-item active" data-tab="home">
+                    <div class="nav-icon">🏠</div>
+                    <div class="nav-label">Home</div>
+                </a>
+                <a href="#" class="nav-item" data-tab="training">
+                    <div class="nav-icon">💪</div>
+                    <div class="nav-label">Training</div>
+                </a>
+                <a href="#" class="nav-item" data-tab="progress">
+                    <div class="nav-icon">📊</div>
+                    <div class="nav-label">Progress</div>
+                </a>
+                <a href="#" class="nav-item" data-tab="profile">
+                    <div class="nav-icon">👤</div>
+                    <div class="nav-label">Profile</div>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global app state
+        let appState = {
+            currentView: 'dashboard',
+            selectedTime: null,
+            selectedEquipment: [],
+            selectedEnergy: null,
+            currentWorkout: null,
+            workoutSession: null,
+            timers: {
+                overall: null,
+                phase: null,
+                overallSeconds: 0,
+                phaseSeconds: 0
+            },
+            navigationHistory: []
+        };
+
+        // Mock user profile and skills assessment (would come from database)
+        const mockUserProfile = {
+            id: 1,
+            name: "Matt O'Neill",
+            age: 19,
+            experience_level: "high_school",
+            years_catching: 4,
+            primary_goals: ["blocking", "framing", "arm_strength"],
+            available_equipment: ["tennis_balls", "catching_gear", "home_plate", "wall"],
+            preferred_duration: 30,
+            training_frequency: 4
+        };
+
+        const mockSkillsAssessment = {
+            // Receiving skills (weak area)
+            glove_move: 4,
+            glove_load: 3,
+            setups: 5,
+            presentation: 4,
+            // Throwing skills (stronger)
+            footwork: 7,
+            exchange: 6,
+            arm_strength: 8,
+            accuracy: 7,
+            // Blocking (average)
+            blocking_overall: 6,
+            // Education (needs work)
+            pitch_calling: 3,
+            scouting_reports: 2,
+            umpire_relations: 5,
+            pitcher_relations: 4
+        };
+
+        // Drill library (subset for demo)
+        const drillLibrary = [
+            {
+                id: 1,
+                name: "Basic Glove Positioning",
+                category: "receiving",
+                subcategory: "glove_move",
+                difficulty: "beginner",
+                duration_minutes: 3,
+                equipment_required: ["tennis_balls"],
+                equipment_tier: "basic",
+                description: "Start in a comfortable squat position. Hold your glove steady with the pocket facing the incoming ball. Focus on keeping your glove still and letting the ball come to you.",
+                coaching_notes: "Keep your glove quiet - movement creates noise for the umpire. Think 'catch and stick' rather than 'catch and move'."
+            },
+            {
+                id: 2,
+                name: "Glove Loading Drill",
+                category: "receiving",
+                subcategory: "glove_load",
+                difficulty: "beginner",
+                duration_minutes: 4,
+                equipment_required: ["tennis_balls", "catching_gear"],
+                equipment_tier: "intermediate",
+                description: "Practice loading your glove properly before the pitch arrives. Set up with your glove slightly offset from center.",
+                coaching_notes: "Pre-loading your glove helps you present strikes more effectively and frame borderline pitches."
+            },
+            {
+                id: 3,
+                name: "Presentation Fundamentals",
+                category: "receiving",
+                subcategory: "presentation",
+                difficulty: "intermediate",
+                duration_minutes: 5,
+                equipment_required: ["tennis_balls", "catching_gear", "home_plate"],
+                equipment_tier: "advanced",
+                description: "Focus on holding pitches steady after catching them. Work on subtle movements to present borderline strikes.",
+                coaching_notes: "Hold the pitch for a full count before returning. Let the umpire see the strike."
+            },
+            {
+                id: 4,
+                name: "Footwork Fundamentals",
+                category: "throwing",
+                subcategory: "footwork",
+                difficulty: "beginner",
+                duration_minutes: 4,
+                equipment_required: ["tennis_balls"],
+                equipment_tier: "basic",
+                description: "Practice the quick feet movement for throwing to second base. Focus on getting your feet set quickly.",
+                coaching_notes: "Quick feet lead to quick throws. Your footwork is more important than arm strength."
+            },
+            {
+                id: 5,
+                name: "Game Situation Communication",
+                category: "education",
+                subcategory: "pitcher_relations",
+                difficulty: "intermediate",
+                duration_minutes: 3,
+                equipment_required: [],
+                equipment_tier: "basic",
+                description: "Review common game situations and appropriate signals. Practice clear, confident communication.",
+                coaching_notes: "You're the quarterback of the defense. Clear communication prevents confusion and errors."
+            }
+        ];
+
+        // AI Workout Generation Algorithm (simplified version)
+        class WorkoutGenerationAlgorithm {
+            static generateWorkout(userProfile, skillsAssessment, availableEquipment, plannedDuration, availableDrills) {
+                // Analyze weakest skills
+                const skillAnalysis = this.analyzeSkills(skillsAssessment);
+                const focusArea = skillAnalysis.weakestCategory;
+                
+                // Create time template based on duration
+                const timeTemplate = this.getTimeTemplate(plannedDuration);
+                
+                // Select drills based on equipment and focus area
+                const selectedDrills = this.selectDrills(availableDrills, availableEquipment, focusArea, timeTemplate);
+                
+                // Generate AI coaching notes
+                const coachingNotes = this.generateCoachingNotes(skillAnalysis, focusArea);
+                
+                return {
+                    id: Date.now(),
+                    duration: plannedDuration,
+                    focusArea: focusArea,
+                    equipment: availableEquipment,
+                    coachingNotes: coachingNotes,
+                    phases: selectedDrills,
+                    skillAnalysis: skillAnalysis
+                };
+            }
+
+            static analyzeSkills(assessment) {
+                const categories = {
+                    receiving: ['glove_move', 'glove_load', 'setups', 'presentation'],
+                    throwing: ['footwork', 'exchange', 'arm_strength', 'accuracy'],
+                    blocking: ['blocking_overall'],
+                    education: ['pitch_calling', 'scouting_reports', 'umpire_relations', 'pitcher_relations']
+                };
+
+                const categoryAverages = {};
+                let weakestCategory = '';
+                let lowestAverage = 10;
+
+                for (const [category, skills] of Object.entries(categories)) {
+                    const average = skills.reduce((sum, skill) => sum + assessment[skill], 0) / skills.length;
+                    categoryAverages[category] = average;
+                    
+                    if (average < lowestAverage) {
+                        lowestAverage = average;
+                        weakestCategory = category;
+                    }
+                }
+
+                return {
+                    categoryAverages,
+                    weakestCategory,
+                    weakestScore: lowestAverage
+                };
+            }
+
+            static getTimeTemplate(duration) {
+                switch (duration) {
+                    case 15:
+                        return {
+                            warmup: 2,
+                            main_work: 9,
+                            secondary_work: 2,
+                            education: 2
+                        };
+                    case 30:
+                        return {
+                            warmup: 3,
+                            main_work: 15,
+                            secondary_work: 8,
+                            education: 4
+                        };
+                    case 45:
+                        return {
+                            warmup: 5,
+                            main_work: 20,
+                            secondary_work: 12,
+                            education: 6,
+                            video_review: 2
+                        };
+                    case 60:
+                        return {
+                            warmup: 5,
+                            main_work: 25,
+                            secondary_work: 15,
+                            education: 8,
+                            video_review: 5,
+                            cooldown: 2
+                        };
+                    default:
+                        return {
+                            warmup: 3,
+                            main_work: 15,
+                            secondary_work: 8,
+                            education: 4
+                        };
+                }
+            }
+
+            static selectDrills(availableDrills, equipment, focusArea, timeTemplate) {
+                const phases = [];
+                
+                // Filter drills by available equipment
+                const compatibleDrills = availableDrills.filter(drill => 
+                    drill.equipment_required.every(req => equipment.includes(req))
+                );
+
+                // Warmup phase
+                if (timeTemplate.warmup) {
+                    const warmupDrills = compatibleDrills.filter(d => d.category === focusArea && d.difficulty === 'beginner');
+                    phases.push({
+                        name: 'Warm-Up',
+                        icon: '🔥',
+                        duration: timeTemplate.warmup,
+                        drills: warmupDrills.slice(0, 1),
+                        color: '#FF6F00'
+                    });
+                }
+
+                // Main work phase
+                if (timeTemplate.main_work) {
+                    const mainDrills = compatibleDrills.filter(d => d.category === focusArea);
+                    phases.push({
+                        name: 'Main Work',
+                        icon: '💪',
+                        duration: timeTemplate.main_work,
+                        drills: mainDrills.slice(0, 2),
+                        color: '#00E676'
+                    });
+                }
+
+                // Secondary work phase
+                if (timeTemplate.secondary_work) {
+                    const secondaryDrills = compatibleDrills.filter(d => d.category !== focusArea);
+                    phases.push({
+                        name: 'Secondary Work',
+                        icon: '⚙️',
+                        duration: timeTemplate.secondary_work,
+                        drills: secondaryDrills.slice(0, 1),
+                        color: '#2196F3'
+                    });
+                }
+
+                // Education phase
+                if (timeTemplate.education) {
+                    const educationDrills = compatibleDrills.filter(d => d.category === 'education');
+                    phases.push({
+                        name: 'Education',
+                        icon: '🧠',
+                        duration: timeTemplate.education,
+                        drills: educationDrills.slice(0, 1),
+                        color: '#9C27B0'
+                    });
+                }
+
+                return phases;
+            }
+
+            static generateCoachingNotes(skillAnalysis, focusArea) {
+                const notes = {
+                    receiving: `Based on your assessment, receiving is your primary focus area (avg: ${skillAnalysis.categoryAverages.receiving.toFixed(1)}/10). Today's workout emphasizes glove positioning and presentation fundamentals. Focus on keeping your glove quiet and letting the ball travel to you.`,
+                    throwing: `Your throwing mechanics need attention (avg: ${skillAnalysis.categoryAverages.throwing.toFixed(1)}/10). We're working on footwork and exchange timing today. Remember: quick feet lead to quick throws.`,
+                    blocking: `Blocking technique is our focus today (avg: ${skillAnalysis.categoryAverages.blocking.toFixed(1)}/10). Keep your chest over the ball and create good angles to keep balls in front.`,
+                    education: `Game awareness and communication are key areas for improvement (avg: ${skillAnalysis.categoryAverages.education.toFixed(1)}/10). Focus on being the quarterback of your defense.`
+                };
+
+                return notes[focusArea] || "Let's work on fundamentals and build consistency in your catching technique.";
+            }
+        }
+
+        // Navigation Functions
+        function navigateToSection(sectionName) {
+            // Add current view to history
+            if (appState.currentView !== sectionName) {
+                appState.navigationHistory.push(appState.currentView);
+            }
+
+            // Hide all sections
+            document.getElementById('dashboard').style.display = 'none';
+            document.getElementById('workoutDisplay').classList.remove('active');
+            document.getElementById('workoutExecution').classList.remove('active');
+            document.getElementById('progressSection').classList.remove('active');
+            document.getElementById('profileSection').classList.remove('active');
+
+            // Show selected section
+            switch(sectionName) {
+                case 'dashboard':
+                case 'home':
+                    document.getElementById('dashboard').style.display = 'block';
+                    appState.currentView = 'dashboard';
+                    break;
+                case 'training':
+                    // Training tab goes to dashboard for now (could be modified later)
+                    document.getElementById('dashboard').style.display = 'block';
+                    appState.currentView = 'dashboard';
+                    break;
+                case 'progress':
+                    document.getElementById('progressSection').classList.add('active');
+                    appState.currentView = 'progress';
+                    break;
+                case 'profile':
+                    document.getElementById('profileSection').classList.add('active');
+                    appState.currentView = 'profile';
+                    break;
+                case 'workout_display':
+                    document.getElementById('workoutDisplay').classList.add('active');
+                    appState.currentView = 'workout_display';
+                    break;
+                case 'workout_execution':
+                    document.getElementById('workoutExecution').classList.add('active');
+                    appState.currentView = 'workout_execution';
+                    break;
+            }
+
+            // Update navigation highlights
+            updateNavigation(sectionName);
+            
+            // Show/hide back button
+            updateBackButton();
+        }
+
+        function updateNavigation(activeSection) {
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+
+            // Map sections to nav tabs
+            const navMapping = {
+                'dashboard': 'home',
+                'training': 'training',
+                'progress': 'progress',
+                'profile': 'profile',
+                'workout_display': 'training',
+                'workout_execution': 'training'
+            };
+
+            const navTab = navMapping[activeSection] || activeSection;
+            const activeNav = document.querySelector(`[data-tab="${navTab}"]`);
+            if (activeNav) {
+                activeNav.classList.add('active');
+            }
+        }
+
+        function updateBackButton() {
+            const backButton = document.getElementById('backButton');
+            const showBack = appState.currentView !== 'dashboard' && 
+                            appState.currentView !== 'progress' && 
+                            appState.currentView !== 'profile';
+            
+            if (showBack) {
+                backButton.classList.remove('hidden');
+            } else {
+                backButton.classList.add('hidden');
+            }
+        }
+
+        function goBack() {
+            if (appState.navigationHistory.length > 0) {
+                const previousView = appState.navigationHistory.pop();
+                navigateToSection(previousView);
+            } else {
+                navigateToSection('dashboard');
+            }
+        }
+        function startTraining() {
+            document.getElementById('dailyCheckinModal').classList.add('active');
+        }
+
+        function closeDailyCheckin() {
+            document.getElementById('dailyCheckinModal').classList.remove('active');
+            resetSelections();
+        }
+
+        function resetSelections() {
+            // Reset all selections
+            document.querySelectorAll('.time-option.selected').forEach(el => el.classList.remove('selected'));
+            document.querySelectorAll('.equipment-item.selected').forEach(el => el.classList.remove('selected'));
+            document.querySelectorAll('.energy-option.selected').forEach(el => el.classList.remove('selected'));
+            
+            appState.selectedTime = null;
+            appState.selectedEquipment = [];
+            appState.selectedEnergy = null;
+            
+            updateGenerateButton();
+        }
+
+        function updateGenerateButton() {
+            const btn = document.getElementById('generateWorkoutBtn');
+            const isValid = appState.selectedTime && appState.selectedEquipment.length > 0 && appState.selectedEnergy;
+            
+            btn.disabled = !isValid;
+            btn.textContent = isValid ? 'Generate Workout' : 'Complete Selections';
+        }
+
+        function generateWorkout() {
+            if (!appState.selectedTime || appState.selectedEquipment.length === 0 || !appState.selectedEnergy) {
+                return;
+            }
+
+            // Show loading state
+            const btn = document.getElementById('generateWorkoutBtn');
+            btn.innerHTML = '<span class="loading-spinner"></span>Generating...';
+            btn.disabled = true;
+
+            // Simulate AI processing delay
+            setTimeout(() => {
+                // Generate workout using AI algorithm
+                const workout = WorkoutGenerationAlgorithm.generateWorkout(
+                    mockUserProfile,
+                    mockSkillsAssessment,
+                    appState.selectedEquipment,
+                    appState.selectedTime,
+                    drillLibrary
+                );
+
+                appState.currentWorkout = workout;
+                
+                // Update UI with generated workout
+                displayWorkout(workout);
+                
+                // Hide modal and show workout
+                closeDailyCheckin();
+                showWorkoutDisplay();
+                
+                btn.innerHTML = 'Generate Workout';
+                btn.disabled = false;
+            }, 2000);
+        }
+
+        function displayWorkout(workout) {
+            // Update workout header
+            document.getElementById('workoutTitle').textContent = `${workout.focusArea.charAt(0).toUpperCase() + workout.focusArea.slice(1)} Focus Training`;
+            document.getElementById('workoutDuration').textContent = `${workout.duration} min`;
+            document.getElementById('workoutFocus').textContent = workout.focusArea.charAt(0).toUpperCase() + workout.focusArea.slice(1);
+            document.getElementById('workoutEquipment').textContent = workout.equipment.length + ' items';
+            document.getElementById('aiCoachNotes').textContent = workout.coachingNotes;
+
+            // Display phases
+            const phasesContainer = document.getElementById('workoutPhases');
+            phasesContainer.innerHTML = '';
+
+            workout.phases.forEach((phase, index) => {
+                const phaseElement = createPhaseElement(phase, index);
+                phasesContainer.appendChild(phaseElement);
+            });
+        }
+
+        function createPhaseElement(phase, index) {
+            const phaseDiv = document.createElement('div');
+            phaseDiv.className = 'phase-item';
+            phaseDiv.innerHTML = `
+                <div class="phase-header" onclick="togglePhase(${index})">
+                    <div class="phase-icon" style="color: ${phase.color}">${phase.icon}</div>
+                    <div class="phase-info">
+                        <div class="phase-name">${phase.name}</div>
+                        <div class="phase-duration">${phase.duration} minutes • ${phase.drills.length} drill(s)</div>
+                    </div>
+                    <div class="phase-toggle">▼</div>
+                </div>
+                <div class="phase-content">
+                    ${phase.drills.map(drill => `
+                        <div class="drill-item">
+                            <div class="drill-name">${drill.name}</div>
+                            <div class="drill-description">${drill.description}</div>
+                            <div class="drill-meta">
+                                <span class="drill-meta-item">
+                                    <span class="drill-meta-label">Duration:</span> ${drill.duration_minutes} min
+                                </span>
+                                <span class="drill-meta-item">
+                                    <span class="drill-meta-label">Difficulty:</span> ${drill.difficulty}
+                                </span>
+                                <span class="drill-meta-item">
+                                    <span class="drill-meta-label">Equipment:</span> ${drill.equipment_required.join(', ')}
+                                </span>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+            return phaseDiv;
+        }
+
+        function togglePhase(index) {
+            const phases = document.querySelectorAll('.phase-item');
+            const phase = phases[index];
+            phase.classList.toggle('expanded');
+        }
+
+        function showWorkoutDisplay() {
+            navigateToSection('workout_display');
+        }
+
+        function regenerateWorkout() {
+            // Go back to dashboard and trigger daily check-in
+            navigateToSection('dashboard');
+            setTimeout(() => startTraining(), 300);
+        }
+
+        function startWorkoutExecution() {
+            if (!appState.currentWorkout) return;
+
+            // Initialize workout session
+            appState.workoutSession = {
+                workout: appState.currentWorkout,
+                currentPhaseIndex: 0,
+                currentDrillIndex: 0,
+                startTime: Date.now(),
+                isRunning: false,
+                completedDrills: []
+            };
+
+            // Navigate to execution
+            navigateToSection('workout_execution');
+
+            // Initialize execution UI
+            initializeWorkoutExecution();
+        }
+
+        function initializeWorkoutExecution() {
+            const session = appState.workoutSession;
+            const workout = session.workout;
+
+            // Set total workout time
+            appState.timers.overallSeconds = workout.duration * 60;
+            
+            // Initialize phase progress badges
+            updatePhaseProgress();
+            
+            // Load first phase
+            loadCurrentPhase();
+            
+            // Initialize timers
+            updateTimerDisplays();
+        }
+
+        function updatePhaseProgress() {
+            const progressContainer = document.getElementById('phaseProgress');
+            const workout = appState.workoutSession.workout;
+            const currentPhaseIndex = appState.workoutSession.currentPhaseIndex;
+
+            progressContainer.innerHTML = '';
+            
+            workout.phases.forEach((phase, index) => {
+                const badge = document.createElement('div');
+                badge.className = 'phase-badge';
+                
+                if (index < currentPhaseIndex) {
+                    badge.classList.add('completed');
+                } else if (index === currentPhaseIndex) {
+                    badge.classList.add('current');
+                } else {
+                    badge.classList.add('upcoming');
+                }
+                
+                badge.innerHTML = `
+                    <span>${phase.icon}</span>
+                    <span>${phase.name}</span>
+                    ${index < currentPhaseIndex ? '<span>✓</span>' : ''}
+                `;
+                
+                progressContainer.appendChild(badge);
+            });
+        }
+
+        function loadCurrentPhase() {
+            const session = appState.workoutSession;
+            const currentPhase = session.workout.phases[session.currentPhaseIndex];
+            const currentDrill = currentPhase.drills[session.currentDrillIndex];
+
+            // Set phase timer
+            appState.timers.phaseSeconds = currentPhase.duration * 60;
+            
+            // Update phase title
+            document.getElementById('currentPhaseTitle').innerHTML = `${currentPhase.icon} ${currentPhase.name}`;
+            
+            // Update current drill
+            if (currentDrill) {
+                document.getElementById('currentDrillTitle').textContent = currentDrill.name;
+                document.getElementById('currentDrillInstructions').textContent = currentDrill.description;
+                
+                // Update equipment tags
+                const equipmentContainer = document.getElementById('currentDrillEquipment');
+                equipmentContainer.innerHTML = '';
+                currentDrill.equipment_required.forEach(equipment => {
+                    const tag = document.createElement('span');
+                    tag.className = 'equipment-tag';
+                    tag.textContent = equipment.replace('_', ' ');
+                    equipmentContainer.appendChild(tag);
+                });
+            }
+        }
+
+        function toggleWorkout() {
+            const session = appState.workoutSession;
+            const startBtn = document.getElementById('startBtn');
+            const pauseBtn = document.getElementById('pauseBtn');
+
+            if (!session.isRunning) {
+                // Start workout
+                session.isRunning = true;
+                startBtn.style.display = 'none';
+                pauseBtn.style.display = 'inline-block';
+                
+                // Start timers
+                startTimers();
+            } else {
+                // Pause workout
+                session.isRunning = false;
+                startBtn.style.display = 'inline-block';
+                pauseBtn.style.display = 'none';
+                
+                // Stop timers
+                stopTimers();
+            }
+        }
+
+        function startTimers() {
+            appState.timers.overall = setInterval(() => {
+                if (appState.timers.overallSeconds > 0) {
+                    appState.timers.overallSeconds--;
+                    updateTimerDisplays();
+                } else {
+                    completeWorkout();
+                }
+            }, 1000);
+
+            appState.timers.phase = setInterval(() => {
+                if (appState.timers.phaseSeconds > 0) {
+                    appState.timers.phaseSeconds--;
+                    updateTimerDisplays();
+                } else {
+                    nextPhase();
+                }
+            }, 1000);
+        }
+
+        function stopTimers() {
+            if (appState.timers.overall) {
+                clearInterval(appState.timers.overall);
+                appState.timers.overall = null;
+            }
+            if (appState.timers.phase) {
+                clearInterval(appState.timers.phase);
+                appState.timers.phase = null;
+            }
+        }
+
+        function updateTimerDisplays() {
+            const overallMinutes = Math.floor(appState.timers.overallSeconds / 60);
+            const overallSeconds = appState.timers.overallSeconds % 60;
+            document.getElementById('overallTimer').textContent = 
+                `${overallMinutes.toString().padStart(2, '0')}:${overallSeconds.toString().padStart(2, '0')}`;
+
+            const phaseMinutes = Math.floor(appState.timers.phaseSeconds / 60);
+            const phaseSecondsRem = appState.timers.phaseSeconds % 60;
+            document.getElementById('phaseTimer').textContent = 
+                `${phaseMinutes.toString().padStart(2, '0')}:${phaseSecondsRem.toString().padStart(2, '0')}`;
+        }
+
+        function completeDrill() {
+            const session = appState.workoutSession;
+            const currentPhase = session.workout.phases[session.currentPhaseIndex];
+            
+            // Mark drill as completed
+            session.completedDrills.push({
+                phaseIndex: session.currentPhaseIndex,
+                drillIndex: session.currentDrillIndex,
+                completedAt: Date.now()
+            });
+
+            // Move to next drill or phase
+            if (session.currentDrillIndex < currentPhase.drills.length - 1) {
+                session.currentDrillIndex++;
+                loadCurrentPhase();
+            } else {
+                nextPhase();
+            }
+        }
+
+        function skipDrill() {
+            completeDrill(); // Same behavior for now
+        }
+
+        function nextPhase() {
+            const session = appState.workoutSession;
+            
+            if (session.currentPhaseIndex < session.workout.phases.length - 1) {
+                session.currentPhaseIndex++;
+                session.currentDrillIndex = 0;
+                updatePhaseProgress();
+                loadCurrentPhase();
+            } else {
+                completeWorkout();
+            }
+        }
+
+        function completeWorkout() {
+            stopTimers();
+            alert('Workout completed! Great job today. 🎉');
+            
+            // Return to dashboard
+            navigateToSection('dashboard');
+            
+            // Reset state
+            appState.workoutSession = null;
+            appState.currentWorkout = null;
+        }
+
+        // Event Listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            // Time selection
+            document.querySelectorAll('.time-option').forEach(option => {
+                option.addEventListener('click', function() {
+                    document.querySelectorAll('.time-option').forEach(o => o.classList.remove('selected'));
+                    this.classList.add('selected');
+                    appState.selectedTime = parseInt(this.dataset.duration);
+                    updateGenerateButton();
+                });
+            });
+
+            // Equipment selection
+            document.querySelectorAll('.equipment-item').forEach(item => {
+                item.addEventListener('click', function() {
+                    const equipment = this.dataset.equipment;
+                    if (this.classList.contains('selected')) {
+                        this.classList.remove('selected');
+                        appState.selectedEquipment = appState.selectedEquipment.filter(e => e !== equipment);
+                    } else {
+                        this.classList.add('selected');
+                        appState.selectedEquipment.push(equipment);
+                    }
+                    updateGenerateButton();
+                });
+            });
+
+            // Energy selection
+            document.querySelectorAll('.energy-option').forEach(option => {
+                option.addEventListener('click', function() {
+                    document.querySelectorAll('.energy-option').forEach(o => o.classList.remove('selected'));
+                    this.classList.add('selected');
+                    appState.selectedEnergy = this.dataset.energy;
+                    updateGenerateButton();
+                });
+            });
+
+            // Navigation
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const section = this.dataset.tab;
+                    navigateToSection(section);
+                });
+            });
+        });
+    </script>
+</body>
+</html>
