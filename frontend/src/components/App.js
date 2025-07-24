@@ -1,40 +1,33 @@
 import React, { useState, useEffect } from 'react';
 import './App.css';
 
-// Import your existing components
+// Import components for simplified flow
 import AuthScreen from './AuthScreen.js';
-import IntakeQuestionnaire from './IntakeQuestionnaire.js';
-import SkillsAssessmentForm from './SkillsAssessmentForm.js';
-import DailyCheckin from './DailyCheckin.js';
 import WorkoutDisplay from './WorkoutDisplay.js';
 import WorkoutExecution from './WorkoutExecution.js';
 
+// Note: Removed IntakeQuestionnaire, SkillsAssessmentForm, DailyCheckin for simplified flow
+
 const App = () => {
-  // Main app state management
+  // Simplified app state management
   const [currentUser, setCurrentUser] = useState(null);
-  const [userProfile, setUserProfile] = useState(null);
-  const [skillsAssessment, setSkillsAssessment] = useState(null);
   const [currentWorkout, setCurrentWorkout] = useState(null);
   const [activeTab, setActiveTab] = useState('home');
-  const [appState, setAppState] = useState('auth'); // auth, onboarding, main, training, workout_execution
+  const [appState, setAppState] = useState('auth'); // auth, main, workout_preview, workout_execution
+  const [selectedProgram, setSelectedProgram] = useState(null);
+  const [workoutType, setWorkoutType] = useState(null); // 'program' or 'oneoff'
 
-  // App state flow: auth → onboarding → main → training → workout_execution
-  const [onboardingStep, setOnboardingStep] = useState('intake'); // intake, assessment, complete
-  const [trainingStep, setTrainingStep] = useState('checkin'); // checkin, display, execution
+  // Simplified flow: auth → main → workout_preview → workout_execution
 
-  // User session management
+  // Simplified user session management
   useEffect(() => {
-    // Check for existing user session (in a real app, this would be from localStorage or API)
+    // Check for existing user session
     const savedUser = localStorage.getItem('catching_coach_user');
     if (savedUser) {
       try {
         const userData = JSON.parse(savedUser);
         setCurrentUser(userData);
-        if (userData.profileComplete) {
-          setAppState('main');
-        } else {
-          setAppState('onboarding');
-        }
+        setAppState('main'); // Direct to main dashboard
       } catch (error) {
         console.error('Error loading user session:', error);
         localStorage.removeItem('catching_coach_user');
@@ -42,61 +35,43 @@ const App = () => {
     }
   }, []);
 
-  // Authentication handlers
+  // Simplified authentication handlers
   const handleLogin = (userData) => {
     setCurrentUser(userData);
     localStorage.setItem('catching_coach_user', JSON.stringify(userData));
-    
-    if (userData.profileComplete) {
-      setAppState('main');
-    } else {
-      setAppState('onboarding');
-      setOnboardingStep('intake');
-    }
+    setAppState('main'); // Direct to main dashboard
   };
 
   const handleLogout = () => {
     setCurrentUser(null);
-    setUserProfile(null);
-    setSkillsAssessment(null);
     setCurrentWorkout(null);
+    setSelectedProgram(null);
+    setWorkoutType(null);
     setActiveTab('home');
     setAppState('auth');
     localStorage.removeItem('catching_coach_user');
   };
 
-  // Onboarding handlers
-  const handleIntakeComplete = (intakeData) => {
-    setUserProfile(intakeData);
-    setOnboardingStep('assessment');
+  // Simplified training flow handlers
+  const handleStartProgram = (program) => {
+    setSelectedProgram(program);
+    setWorkoutType('program');
+    // Generate workout based on program (placeholder for now)
+    const programWorkout = generateProgramWorkout(program);
+    setCurrentWorkout(programWorkout);
+    setAppState('workout_preview');
   };
 
-  const handleAssessmentComplete = (assessmentData) => {
-    setSkillsAssessment(assessmentData);
-    
-    // Update user as profile complete
-    const updatedUser = { ...currentUser, profileComplete: true };
-    setCurrentUser(updatedUser);
-    localStorage.setItem('catching_coach_user', JSON.stringify(updatedUser));
-    
-    setAppState('main');
-    setActiveTab('home');
-  };
-
-  // Training flow handlers
-  const handleStartTraining = () => {
-    setAppState('training');
-    setTrainingStep('checkin');
-    setActiveTab('training');
-  };
-
-  const handleCheckinComplete = (checkinData, generatedWorkout) => {
-    setCurrentWorkout(generatedWorkout);
-    setTrainingStep('display');
+  const handleStartOneOffWorkout = (workoutConfig) => {
+    setWorkoutType('oneoff');
+    // Generate workout based on configuration (placeholder for now)
+    const oneOffWorkout = generateOneOffWorkout(workoutConfig);
+    setCurrentWorkout(oneOffWorkout);
+    setAppState('workout_preview');
   };
 
   const handleStartWorkout = () => {
-    setTrainingStep('execution');
+    setAppState('workout_execution');
   };
 
   const handleWorkoutComplete = (workoutData) => {
@@ -105,15 +80,17 @@ const App = () => {
     
     // Return to main dashboard
     setAppState('main');
-    setTrainingStep('checkin');
     setCurrentWorkout(null);
+    setSelectedProgram(null);
+    setWorkoutType(null);
     setActiveTab('home');
   };
 
   const handleWorkoutExit = () => {
     setAppState('main');
-    setTrainingStep('checkin');
     setCurrentWorkout(null);
+    setSelectedProgram(null);
+    setWorkoutType(null);
     setActiveTab('home');
   };
 
@@ -124,79 +101,53 @@ const App = () => {
     }
   };
 
-  // Render different app states
+  // Simplified render logic
   const renderContent = () => {
     switch (appState) {
       case 'auth':
         return (
           <AuthScreen 
             onLogin={handleLogin}
-            onSignup={handleLogin}
           />
         );
-
-      case 'onboarding':
+      
+      case 'workout_preview':
         return (
-          <div className="onboarding-container">
-            {onboardingStep === 'intake' && (
-              <IntakeQuestionnaire 
-                onComplete={handleIntakeComplete}
-              />
-            )}
-            {onboardingStep === 'assessment' && (
-              <SkillsAssessmentForm 
-                userProfile={userProfile}
-                onComplete={handleAssessmentComplete}
-              />
-            )}
-          </div>
+          <WorkoutDisplay 
+            workout={currentWorkout}
+            workoutType={workoutType}
+            selectedProgram={selectedProgram}
+            onStart={handleStartWorkout}
+            onExit={handleWorkoutExit}
+          />
         );
-
-      case 'training':
-        return (
-          <div className="training-container">
-            {trainingStep === 'checkin' && (
-              <DailyCheckin 
-                userProfile={userProfile}
-                onComplete={handleCheckinComplete}
-                onCancel={() => setAppState('main')}
-              />
-            )}
-            {trainingStep === 'display' && (
-              <WorkoutDisplay 
-                workout={currentWorkout}
-                onStartWorkout={handleStartWorkout}
-                onRegenerateWorkout={() => setTrainingStep('checkin')}
-                onBackToDashboard={() => setAppState('main')}
-              />
-            )}
-          </div>
-        );
-
+      
       case 'workout_execution':
         return (
           <WorkoutExecution 
             workout={currentWorkout}
-            onWorkoutComplete={handleWorkoutComplete}
-            onWorkoutExit={handleWorkoutExit}
+            workoutType={workoutType}
+            selectedProgram={selectedProgram}
+            onComplete={handleWorkoutComplete}
+            onExit={handleWorkoutExit}
           />
         );
-
+      
       case 'main':
         return (
-          <div className="main-app">
-            <div className="app-content">
+          <div className="app-container">
+            <div className="main-content">
               {renderMainContent()}
             </div>
             <BottomNavigation 
-              activeTab={activeTab}
-              onTabChange={handleTabChange}
+              activeTab={activeTab} 
+              onTabChange={handleTabChange} 
             />
           </div>
         );
-
+      
       default:
-        return <div className="loading">Loading...</div>;
+        return <div>Loading...</div>;
     }
   };
 
@@ -207,40 +158,67 @@ const App = () => {
         return (
           <Dashboard 
             user={currentUser}
-            userProfile={userProfile}
-            onStartTraining={handleStartTraining}
+            onStartProgram={handleStartProgram}
+            onStartOneOffWorkout={handleStartOneOffWorkout}
             onLogout={handleLogout}
           />
         );
-
       case 'training':
         return (
           <TrainingHub 
-            userProfile={userProfile}
-            onStartNewWorkout={handleStartTraining}
+            onStartProgram={handleStartProgram}
+            onStartOneOffWorkout={handleStartOneOffWorkout}
           />
         );
-
       case 'progress':
         return (
           <ProgressDashboard 
             user={currentUser}
-            userProfile={userProfile}
           />
         );
-
       case 'profile':
         return (
           <UserProfile 
             user={currentUser}
-            userProfile={userProfile}
             onLogout={handleLogout}
           />
         );
-
       default:
-        return <Dashboard user={currentUser} onStartTraining={handleStartTraining} />;
+        return <div>Page not found</div>;
     }
+  };
+
+  // Placeholder workout generation functions (will be enhanced later)
+  const generateProgramWorkout = (program) => {
+    // Placeholder: Generate workout based on program
+    return {
+      id: Date.now(),
+      type: 'program',
+      programName: program.name,
+      title: `${program.name} - Week ${program.currentWeek}, Day ${program.currentDay}`,
+      duration: program.sessionDuration || 30,
+      exercises: [
+        { name: 'Placeholder Exercise 1', duration: 10, description: 'Program-based exercise' },
+        { name: 'Placeholder Exercise 2', duration: 15, description: 'Program-based exercise' },
+        { name: 'Placeholder Exercise 3', duration: 5, description: 'Program-based exercise' }
+      ]
+    };
+  };
+
+  const generateOneOffWorkout = (config) => {
+    // Placeholder: Generate workout based on configuration
+    return {
+      id: Date.now(),
+      type: 'oneoff',
+      title: `${config.category} Focus Session`,
+      duration: config.duration || 30,
+      difficulty: config.difficulty || 'intermediate',
+      exercises: [
+        { name: 'Placeholder Drill 1', duration: 10, description: `${config.category} focused drill` },
+        { name: 'Placeholder Drill 2', duration: 15, description: `${config.category} focused drill` },
+        { name: 'Placeholder Drill 3', duration: 5, description: `${config.category} focused drill` }
+      ]
+    };
   };
 
   return (
@@ -250,8 +228,8 @@ const App = () => {
   );
 };
 
-// Dashboard Component (Home Tab)
-const Dashboard = ({ user, userProfile, onStartTraining, onLogout }) => {
+// Dashboard Component (Home Tab) - Updated for simplified flow
+const Dashboard = ({ user, onStartProgram, onStartOneOffWorkout, onLogout }) => {
   const [currentStreak, setCurrentStreak] = useState(3); // Mock data - would come from backend
   const [totalWorkouts, setTotalWorkouts] = useState(12); // Mock data
   const [weeklyGoal, setWeeklyGoal] = useState(4); // Mock data
@@ -304,11 +282,17 @@ const Dashboard = ({ user, userProfile, onStartTraining, onLogout }) => {
 
       <div className="main-action">
         <h2>Ready to Train?</h2>
-        <p>Get your personalized catching workout powered by AI</p>
-        <button className="start-training-btn" onClick={onStartTraining}>
-          <span className="btn-icon">🚀</span>
-          Start Training Session
-        </button>
+        <p>Choose your training path</p>
+        <div className="training-options">
+          <button className="start-program-btn" onClick={() => onStartProgram({ name: 'Elite Catcher Development', currentWeek: 1, currentDay: 1, sessionDuration: 45 })}>
+            <span className="btn-icon">🏆</span>
+            Continue Program
+          </button>
+          <button className="start-oneoff-btn" onClick={() => onStartOneOffWorkout({ category: 'Receiving & Framing', duration: 30, difficulty: 'intermediate' })}>
+            <span className="btn-icon">⚡</span>
+            Quick Workout
+          </button>
+        </div>
       </div>
 
       <div className="recent-activity">
@@ -366,14 +350,26 @@ const BottomNavigation = ({ activeTab, onTabChange }) => {
   );
 };
 
-// Placeholder components for other tabs (we'll build these next)
-const TrainingHub = ({ onStartNewWorkout }) => (
+// Updated TrainingHub component for new flow
+const TrainingHub = ({ onStartProgram, onStartOneOffWorkout }) => (
   <div className="training-hub">
     <h2>Training Hub</h2>
-    <p>Your workout history and training plans</p>
-    <button className="btn-primary" onClick={onStartNewWorkout}>
-      Start New Workout
-    </button>
+    <div className="training-sections">
+      <div className="training-section">
+        <h3>📚 Programs</h3>
+        <p>Structured multi-week training plans</p>
+        <button className="btn-primary" onClick={() => onStartProgram({ name: 'Elite Catcher Development', currentWeek: 1, currentDay: 1 })}>
+          Browse Programs
+        </button>
+      </div>
+      <div className="training-section">
+        <h3>⚡ Quick Workouts</h3>
+        <p>Focus on specific skills today</p>
+        <button className="btn-secondary" onClick={() => onStartOneOffWorkout({ category: 'Blocking & Recovery', duration: 30 })}>
+          Create Workout
+        </button>
+      </div>
+    </div>
   </div>
 );
 
