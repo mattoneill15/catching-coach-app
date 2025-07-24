@@ -76,51 +76,35 @@ const AuthScreen = ({ onAuthSuccess }) => {
     setIsLoading(true);
 
     try {
+      // Mock authentication - always succeeds for demo purposes
+      await new Promise(resolve => setTimeout(resolve, 800));
+      
       if (isLogin) {
-        // Login logic
-        const loginData = {
-          email: formData.email,
-          password: formData.password
-        };
-        
-        // Simulate API call (replace with actual authentication)
-        await new Promise(resolve => setTimeout(resolve, 1500));
-        
-        // Mock successful login - replace with real auth response
+        // Mock successful login
         const userData = {
-          user_id: 'mock-user-id',
+          user_id: 'demo-user-' + Date.now(),
           email: formData.email,
-          first_name: 'Mock',
+          name: 'Demo User',
+          first_name: formData.email.split('@')[0] || 'Demo',
           last_name: 'User',
-          needs_onboarding: false // Set true if user needs to complete intake
+          needs_onboarding: false
         };
         
         onAuthSuccess(userData, 'login');
         
       } else {
-        // Sign up logic
-        const signupData = {
-          email: formData.email,
-          password: formData.password,
-          firstName: formData.firstName,
-          lastName: formData.lastName
-        };
-        
-        // Simulate API call (replace with actual user creation)
-        await new Promise(resolve => setTimeout(resolve, 2000));
-        
-        // Mock successful signup - replace with real auth response
+        // Mock successful signup
         const userData = {
-          user_id: 'new-user-id',
+          user_id: 'demo-user-' + Date.now(),
           email: formData.email,
+          name: `${formData.firstName} ${formData.lastName}`,
           first_name: formData.firstName,
           last_name: formData.lastName,
-          needs_onboarding: true // New users need intake questionnaire
+          needs_onboarding: false // Skip onboarding for demo
         };
         
         onAuthSuccess(userData, 'signup');
       }
-      
     } catch (error) {
       console.error('Authentication error:', error);
       setErrors({ general: 'Authentication failed. Please try again.' });
