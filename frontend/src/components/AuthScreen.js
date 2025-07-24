@@ -29,23 +29,17 @@ const AuthScreen = ({ onAuthSuccess }) => {
     }
   };
 
-  // Validate form data
+  // Validate form data - simplified for demo
   const validateForm = () => {
     const newErrors = {};
 
-    // Email validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!formData.email) {
+    // Simple validation - just require non-empty fields
+    if (!formData.email.trim()) {
       newErrors.email = 'Email is required';
-    } else if (!emailRegex.test(formData.email)) {
-      newErrors.email = 'Please enter a valid email';
     }
 
-    // Password validation
-    if (!formData.password) {
+    if (!formData.password.trim()) {
       newErrors.password = 'Password is required';
-    } else if (formData.password.length < 6) {
-      newErrors.password = 'Password must be at least 6 characters';
     }
 
     // Additional validation for sign up
@@ -56,7 +50,7 @@ const AuthScreen = ({ onAuthSuccess }) => {
       if (!formData.lastName.trim()) {
         newErrors.lastName = 'Last name is required';
       }
-      if (!formData.confirmPassword) {
+      if (!formData.confirmPassword.trim()) {
         newErrors.confirmPassword = 'Please confirm your password';
       } else if (formData.password !== formData.confirmPassword) {
         newErrors.confirmPassword = 'Passwords do not match';
