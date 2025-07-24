@@ -5,6 +5,7 @@ import './App.css';
 import AuthScreen from './AuthScreen.js';
 import WorkoutDisplay from './WorkoutDisplay.js';
 import WorkoutExecution from './WorkoutExecution.js';
+import ProgramsHub from './ProgramsHub.js';
 
 // Note: Removed IntakeQuestionnaire, SkillsAssessmentForm, DailyCheckin for simplified flow
 
@@ -13,11 +14,12 @@ const App = () => {
   const [currentUser, setCurrentUser] = useState(null);
   const [currentWorkout, setCurrentWorkout] = useState(null);
   const [activeTab, setActiveTab] = useState('home');
-  const [appState, setAppState] = useState('auth'); // auth, main, workout_preview, workout_execution
+  const [appState, setAppState] = useState('auth'); // auth, main, programs_hub, workout_preview, workout_execution
   const [selectedProgram, setSelectedProgram] = useState(null);
   const [workoutType, setWorkoutType] = useState(null); // 'program' or 'oneoff'
+  const [showProgramsHub, setShowProgramsHub] = useState(false);
 
-  // Simplified flow: auth → main → workout_preview → workout_execution
+  // Simplified flow: auth → main → [programs_hub] → workout_preview → workout_execution
 
   // Simplified user session management
   useEffect(() => {
@@ -59,7 +61,18 @@ const App = () => {
     // Generate workout based on program (placeholder for now)
     const programWorkout = generateProgramWorkout(program);
     setCurrentWorkout(programWorkout);
+    setShowProgramsHub(false);
     setAppState('workout_preview');
+  };
+
+  const handleShowProgramsHub = () => {
+    setShowProgramsHub(true);
+    setAppState('programs_hub');
+  };
+
+  const handleBackFromPrograms = () => {
+    setShowProgramsHub(false);
+    setAppState('main');
   };
 
   const handleStartOneOffWorkout = (workoutConfig) => {
@@ -91,6 +104,7 @@ const App = () => {
     setCurrentWorkout(null);
     setSelectedProgram(null);
     setWorkoutType(null);
+    setShowProgramsHub(false);
     setActiveTab('home');
   };
 
@@ -108,6 +122,14 @@ const App = () => {
         return (
           <AuthScreen 
             onLogin={handleLogin}
+          />
+        );
+      
+      case 'programs_hub':
+        return (
+          <ProgramsHub 
+            onStartProgram={handleStartProgram}
+            onBack={handleBackFromPrograms}
           />
         );
       
@@ -158,7 +180,7 @@ const App = () => {
         return (
           <Dashboard 
             user={currentUser}
-            onStartProgram={handleStartProgram}
+            onStartProgram={handleShowProgramsHub}
             onStartOneOffWorkout={handleStartOneOffWorkout}
             onLogout={handleLogout}
           />
@@ -166,7 +188,7 @@ const App = () => {
       case 'training':
         return (
           <TrainingHub 
-            onStartProgram={handleStartProgram}
+            onStartProgram={handleShowProgramsHub}
             onStartOneOffWorkout={handleStartOneOffWorkout}
           />
         );
@@ -284,9 +306,9 @@ const Dashboard = ({ user, onStartProgram, onStartOneOffWorkout, onLogout }) => 
         <h2>Ready to Train?</h2>
         <p>Choose your training path</p>
         <div className="training-options">
-          <button className="start-program-btn" onClick={() => onStartProgram({ name: 'Elite Catcher Development', currentWeek: 1, currentDay: 1, sessionDuration: 45 })}>
+          <button className="start-program-btn" onClick={onStartProgram}>
             <span className="btn-icon">🏆</span>
-            Continue Program
+            Browse Programs
           </button>
           <button className="start-oneoff-btn" onClick={() => onStartOneOffWorkout({ category: 'Receiving & Framing', duration: 30, difficulty: 'intermediate' })}>
             <span className="btn-icon">⚡</span>
@@ -358,7 +380,7 @@ const TrainingHub = ({ onStartProgram, onStartOneOffWorkout }) => (
       <div className="training-section">
         <h3>📚 Programs</h3>
         <p>Structured multi-week training plans</p>
-        <button className="btn-primary" onClick={() => onStartProgram({ name: 'Elite Catcher Development', currentWeek: 1, currentDay: 1 })}>
+        <button className="btn-primary" onClick={onStartProgram}>
           Browse Programs
         </button>
       </div>

@@ -1,0 +1,486 @@
+/* ProgramsHub.css - Netflix-style Program Selection */
+
+.programs-hub {
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+  min-height: 100vh;
+  background: #0A0A0A;
+  color: #FFFFFF;
+}
+
+/* Header Section */
+.programs-header {
+  text-align: center;
+  margin-bottom: 40px;
+  position: relative;
+}
+
+.back-btn {
+  position: absolute;
+  left: 0;
+  top: 0;
+  background: transparent;
+  color: #B0B0B0;
+  border: 1px solid #555;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.back-btn:hover {
+  color: #FFFFFF;
+  border-color: #777;
+  background: #1A1A1A;
+  transform: translateX(-2px);
+}
+
+.back-icon {
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.programs-header h1 {
+  margin: 0 0 12px 0;
+  font-size: 36px;
+  font-weight: 700;
+  color: #FFFFFF;
+  background: linear-gradient(135deg, #00E676 0%, #00D96F 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.programs-header p {
+  margin: 0;
+  font-size: 18px;
+  color: #B0B0B0;
+  font-weight: 400;
+}
+
+/* Programs Grid */
+.programs-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 24px;
+  margin-bottom: 40px;
+}
+
+/* Program Card */
+.program-card {
+  background: #1E1E1E;
+  border: 2px solid #333;
+  border-radius: 16px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  position: relative;
+}
+
+.program-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
+  border-color: #555;
+}
+
+.program-card.selected {
+  border-color: #00E676;
+  transform: translateY(-4px);
+  box-shadow: 0 12px 32px rgba(0, 230, 118, 0.3);
+}
+
+.program-card.selected::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(0, 230, 118, 0.1) 0%, transparent 100%);
+  pointer-events: none;
+}
+
+/* Program Header */
+.program-header {
+  height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  position: relative;
+  overflow: hidden;
+}
+
+.program-header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(0, 0, 0, 0.2) 0%, rgba(0, 0, 0, 0.4) 100%);
+}
+
+.program-icon {
+  font-size: 48px;
+  z-index: 1;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.program-badge {
+  z-index: 1;
+}
+
+.difficulty {
+  background: rgba(0, 0, 0, 0.6);
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  backdrop-filter: blur(10px);
+}
+
+/* Program Content */
+.program-content {
+  padding: 24px;
+}
+
+.program-name {
+  margin: 0 0 12px 0;
+  font-size: 22px;
+  font-weight: 700;
+  color: #FFFFFF;
+  line-height: 1.2;
+}
+
+.program-description {
+  margin: 0 0 20px 0;
+  font-size: 14px;
+  color: #B0B0B0;
+  line-height: 1.5;
+}
+
+/* Program Stats */
+.program-stats {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.stat {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #2A2A2A;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid #333;
+}
+
+.stat-icon {
+  font-size: 14px;
+}
+
+.stat-text {
+  font-size: 12px;
+  color: #FFFFFF;
+  font-weight: 500;
+}
+
+/* Program Skills */
+.program-skills h4 {
+  margin: 0 0 12px 0;
+  font-size: 14px;
+  color: #FFFFFF;
+  font-weight: 600;
+}
+
+.skills-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.skill-tag {
+  background: linear-gradient(135deg, #333 0%, #444 100%);
+  color: #FFFFFF;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 500;
+  border: 1px solid #555;
+}
+
+.skill-tag.more {
+  background: linear-gradient(135deg, #00E676 0%, #00D96F 100%);
+  color: #0A0A0A;
+  font-weight: 600;
+}
+
+/* Program Details Section */
+.program-details {
+  background: linear-gradient(135deg, #1E1E1E 0%, #2A2A2A 100%);
+  border: 1px solid #333;
+  border-radius: 20px;
+  padding: 32px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.details-header {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 24px;
+}
+
+.details-icon {
+  width: 80px;
+  height: 80px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 36px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+}
+
+.details-info h2 {
+  margin: 0 0 8px 0;
+  font-size: 28px;
+  font-weight: 700;
+  color: #FFFFFF;
+}
+
+.details-duration {
+  margin: 0;
+  font-size: 16px;
+  color: #B0B0B0;
+  font-weight: 500;
+}
+
+.details-description {
+  margin-bottom: 32px;
+}
+
+.details-description p {
+  margin: 0;
+  font-size: 16px;
+  color: #CCCCCC;
+  line-height: 1.6;
+}
+
+.details-skills h3 {
+  margin: 0 0 16px 0;
+  font-size: 20px;
+  font-weight: 700;
+  color: #FFFFFF;
+}
+
+.all-skills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 32px;
+}
+
+.skill-tag-detailed {
+  background: linear-gradient(135deg, #00E676 0%, #00D96F 100%);
+  color: #0A0A0A;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(0, 230, 118, 0.3);
+}
+
+.details-commitment {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 32px;
+  padding: 24px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 12px;
+  border: 1px solid #333;
+}
+
+.commitment-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.commitment-label {
+  font-size: 14px;
+  color: #B0B0B0;
+  font-weight: 500;
+}
+
+.commitment-value {
+  font-size: 14px;
+  color: #FFFFFF;
+  font-weight: 600;
+}
+
+.start-program-btn-detailed {
+  background: linear-gradient(135deg, #00E676 0%, #00D96F 100%);
+  color: #0A0A0A;
+  border: none;
+  padding: 18px 32px;
+  border-radius: 12px;
+  font-size: 18px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 4px 16px rgba(0, 230, 118, 0.4);
+}
+
+.start-program-btn-detailed:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(0, 230, 118, 0.5);
+  background: linear-gradient(135deg, #00D96F 0%, #00CC64 100%);
+}
+
+.start-program-btn-detailed:active {
+  transform: translateY(-1px);
+}
+
+.start-program-btn-detailed .btn-icon {
+  font-size: 20px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .programs-hub {
+    padding: 16px;
+  }
+
+  .programs-header h1 {
+    font-size: 28px;
+  }
+
+  .programs-header p {
+    font-size: 16px;
+  }
+
+  .programs-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .program-content {
+    padding: 20px;
+  }
+
+  .program-stats {
+    gap: 12px;
+  }
+
+  .details-header {
+    flex-direction: column;
+    text-align: center;
+    gap: 16px;
+  }
+
+  .details-info h2 {
+    font-size: 24px;
+  }
+
+  .program-details {
+    padding: 24px;
+  }
+
+  .details-commitment {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .programs-hub {
+    padding: 12px;
+  }
+
+  .back-btn {
+    position: static;
+    margin-bottom: 20px;
+    align-self: flex-start;
+  }
+
+  .programs-header {
+    text-align: left;
+  }
+
+  .programs-header h1 {
+    font-size: 24px;
+  }
+
+  .program-header {
+    height: 100px;
+    padding: 16px 20px;
+  }
+
+  .program-icon {
+    font-size: 36px;
+  }
+
+  .program-content {
+    padding: 16px;
+  }
+
+  .program-name {
+    font-size: 18px;
+  }
+
+  .program-stats {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .stat {
+    justify-content: space-between;
+  }
+
+  .details-icon {
+    width: 60px;
+    height: 60px;
+    font-size: 28px;
+  }
+
+  .program-details {
+    padding: 20px;
+  }
+
+  .start-program-btn-detailed {
+    padding: 16px 24px;
+    font-size: 16px;
+  }
+}
