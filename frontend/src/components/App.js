@@ -1,57 +1,146 @@
 import React, { useState, useEffect } from 'react';
 import './App.css';
 
-// Import components for simplified flow
+// Import components
 import AuthScreen from './AuthScreen.js';
 import WorkoutDisplay from './WorkoutDisplay.js';
+import ProgramWorkoutDisplay from './ProgramWorkoutDisplay.js';
 import WorkoutExecution from './WorkoutExecution.js';
+import ProgramWorkoutExecution from './ProgramWorkoutExecution.js';
 import ProgramsHub from './ProgramsHub.js';
+import IntakeQuestionnaire from './IntakeQuestionnaire.js';
+import SkillsAssessmentForm from './SkillsAssessmentForm.js';
 
-// Note: Removed IntakeQuestionnaire, SkillsAssessmentForm, DailyCheckin for simplified flow
+// Import API hooks and service
+import { useAuth, useWorkoutGeneration, useWorkoutSession, useSkillsAssessment, useUserProgress } from '../hooks/useAPI.js';
+import api from '../services/api.js';
 
 const App = () => {
-  // Simplified app state management
-  const [currentUser, setCurrentUser] = useState(null);
+  // Real authentication and API integration
+  const { user: currentUser, loading: authLoading, login, register, logout, isAuthenticated } = useAuth();
+  const { generateWorkout, workout: generatedWorkout, loading: workoutLoading } = useWorkoutGeneration();
+  const { start: startWorkoutSession, complete: completeWorkoutSession, currentSession } = useWorkoutSession();
+  const { latestAssessment, fetchLatest: fetchLatestAssessment, create: createAssessment } = useSkillsAssessment();
+  const { stats: progressStats, fetchStats: fetchProgressStats } = useUserProgress();
+  
+  // App state management
   const [currentWorkout, setCurrentWorkout] = useState(null);
   const [activeTab, setActiveTab] = useState('home');
-  const [appState, setAppState] = useState('auth'); // auth, main, programs_hub, workout_preview, workout_execution
+  const [appState, setAppState] = useState('loading'); // loading, auth, onboarding, main, etc.
   const [selectedProgram, setSelectedProgram] = useState(null);
   const [workoutType, setWorkoutType] = useState(null); // 'program' or 'oneoff'
   const [showProgramsHub, setShowProgramsHub] = useState(false);
+  const [needsOnboarding, setNeedsOnboarding] = useState(false);
 
-  // Simplified flow: auth → main → [programs_hub] → workout_preview → workout_execution
+  // Real authentication flow: loading → auth → [onboarding] → main → workout flows
 
-  // Simplified user session management
+  // Initialize app state based on authentication
   useEffect(() => {
-    // Check for existing user session
-    const savedUser = localStorage.getItem('catching_coach_user');
-    if (savedUser) {
-      try {
-        const userData = JSON.parse(savedUser);
-        setCurrentUser(userData);
-        setAppState('main'); // Direct to main dashboard
-      } catch (error) {
-        console.error('Error loading user session:', error);
-        localStorage.removeItem('catching_coach_user');
+    if (!authLoading) {
+      if (isAuthenticated) {
+        // Check if user needs onboarding (skills assessment)
+        checkOnboardingStatus();
+      } else {
+        setAppState('auth');
       }
     }
-  }, []);
+  }, [authLoading, isAuthenticated]);
 
-  // Simplified authentication handlers
-  const handleLogin = (userData) => {
-    setCurrentUser(userData);
-    localStorage.setItem('catching_coach_user', JSON.stringify(userData));
-    setAppState('main'); // Direct to main dashboard
+  const checkOnboardingStatus = async () => {
+    try {
+      await fetchLatestAssessment();
+      setAppState('main');
+    } catch (error) {
+      // No skills assessment found - user needs onboarding
+      setNeedsOnboarding(true);
+      setAppState('onboarding');
+    }
+  };
+
+  // Real authentication handlers
+  const handleLogin = async (email) => {
+    try {
+      await login(email);
+      // Auth hook will update user state, useEffect will handle app state
+    } catch (error) {
+      console.error('Login failed:', error);
+      throw error;
+    }
+  };
+
+  const handleRegister = async (userData) => {
+    try {
+      await register(userData);
+      setNeedsOnboarding(true);
+      setAppState('onboarding');
+    } catch (error) {
+      console.error('Registration failed:', error);
+      throw error;
+    }
   };
 
   const handleLogout = () => {
-    setCurrentUser(null);
+    logout();
     setCurrentWorkout(null);
     setSelectedProgram(null);
     setWorkoutType(null);
     setActiveTab('home');
     setAppState('auth');
-    localStorage.removeItem('catching_coach_user');
+    setNeedsOnboarding(false);
+  };
+
+  // Onboarding handlers
+  const handleCompleteIntake = async (intakeData) => {
+    try {
+      // Save intake data to user profile
+      const profileUpdate = {
+        name: currentUser?.name, // Keep existing name
+        age: parseInt(intakeData.age) || null,
+        experience_level: intakeData.experience_level,
+        years_catching: parseInt(intakeData.years_experience) || null, // Backend expects years_catching
+        goals: intakeData.goals || [],
+        equipment_access: intakeData.equipment_access || [],
+        training_preferences: {
+          preferred_session_length: intakeData.preferred_session_length,
+          training_frequency: intakeData.training_frequency,
+          training_focus: intakeData.training_focus,
+          position: intakeData.position,
+          school_team: intakeData.school_team
+        }
+      };
+      
+      // Call API to update user profile
+      await api.user.updateProfile(profileUpdate);
+      
+      // Move to skills assessment
+      setAppState('skills_assessment');
+    } catch (error) {
+      console.error('Failed to save intake data:', error);
+      throw error; // This will be caught by IntakeQuestionnaire and show error message
+    }
+  };
+
+  const handleCompleteSkillsAssessment = async (skillsData) => {
+    try {
+      // Frontend field names match database schema, so pass through directly
+      const assessmentData = {
+        ...skillsData,
+        assessment_notes: skillsData.assessment_notes || '',
+        assessment_type: 'self_rated' // Must match database constraint
+      };
+      
+      // Create assessment and get the complete data back
+      const response = await createAssessment(assessmentData);
+      
+      // The assessment data is automatically managed by the useSkillsAssessment hook
+      // No need to manually store it in state
+      
+      setNeedsOnboarding(false);
+      setAppState('main');
+    } catch (error) {
+      console.error('Failed to save skills assessment:', error);
+      throw error;
+    }
   };
 
   // Simplified training flow handlers
@@ -73,39 +162,80 @@ const App = () => {
   const handleBackFromPrograms = () => {
     setShowProgramsHub(false);
     setAppState('main');
+    setActiveTab('training'); // Return to training tab when backing out of programs
   };
 
-  const handleStartOneOffWorkout = (workoutConfig) => {
-    setWorkoutType('oneoff');
-    // Generate workout based on configuration (placeholder for now)
-    const oneOffWorkout = generateOneOffWorkout(workoutConfig);
-    setCurrentWorkout(oneOffWorkout);
-    setAppState('workout_preview');
+  const handleStartOneOffWorkout = async (workoutConfig) => {
+    try {
+      setWorkoutType('oneoff');
+      // Generate workout using real AI algorithm
+      const result = await generateWorkout(
+        workoutConfig.duration || 30,
+        workoutConfig.equipment || currentUser?.equipment_access || {},
+        workoutConfig.preferences || {}
+      );
+      setCurrentWorkout(result.workout);
+      setAppState('workout_preview');
+    } catch (error) {
+      console.error('Failed to generate workout:', error);
+      // Fallback to basic workout structure
+      const fallbackWorkout = generateFallbackWorkout(workoutConfig);
+      setCurrentWorkout(fallbackWorkout);
+      setAppState('workout_preview');
+    }
   };
 
-  const handleStartWorkout = () => {
-    setAppState('workout_execution');
+  const handleStartWorkout = async () => {
+    try {
+      // Start workout session in database
+      await startWorkoutSession(currentWorkout, workoutType);
+      setAppState('workout_execution');
+    } catch (error) {
+      console.error('Failed to start workout session:', error);
+      // Continue anyway - we can still track locally
+      setAppState('workout_execution');
+    }
   };
 
-  const handleWorkoutComplete = (workoutData) => {
-    // Save workout data (in real app, this would go to database)
-    console.log('Workout completed:', workoutData);
-    
-    // Return to main dashboard
-    setAppState('main');
-    setCurrentWorkout(null);
-    setSelectedProgram(null);
-    setWorkoutType(null);
-    setActiveTab('home');
+  const handleWorkoutComplete = async (workoutData) => {
+    try {
+      // Save workout completion to database
+      if (currentSession) {
+        await completeWorkoutSession(
+          currentSession.session_id,
+          workoutData.duration,
+          workoutData.drillsCompleted || [],
+          workoutData.skillsFocused || [],
+          workoutData.notes || ''
+        );
+      }
+      
+      // Refresh progress stats
+      await fetchProgressStats();
+      
+      console.log('Workout completed and saved:', workoutData);
+    } catch (error) {
+      console.error('Failed to save workout completion:', error);
+    } finally {
+      // Return to main dashboard regardless of save success
+      setAppState('main');
+      setCurrentWorkout(null);
+      setSelectedProgram(null);
+      setWorkoutType(null);
+      setActiveTab('home');
+    }
   };
 
   const handleWorkoutExit = () => {
+    console.log('🏠 handleWorkoutExit called - navigating back to dashboard');
+    console.log('Current appState:', appState);
     setAppState('main');
     setCurrentWorkout(null);
     setSelectedProgram(null);
     setWorkoutType(null);
     setShowProgramsHub(false);
     setActiveTab('home');
+    console.log('🏠 Navigation state updated - should return to dashboard');
   };
 
   // Navigation handlers
@@ -115,62 +245,111 @@ const App = () => {
     }
   };
 
-  // Simplified render logic
+  // Enhanced render logic with onboarding
   const renderContent = () => {
-    switch (appState) {
-      case 'auth':
+    if (authLoading || appState === 'loading') {
+      return (
+        <div className="loading-screen">
+          <div className="loading-spinner"></div>
+          <p>Loading Catching Coach...</p>
+        </div>
+      );
+    }
+
+    if (appState === 'auth') {
+      return (
+        <AuthScreen 
+          onLogin={handleLogin}
+          onRegister={handleRegister}
+        />
+      );
+    }
+
+    if (appState === 'onboarding') {
+      return (
+        <IntakeQuestionnaire 
+          userProfile={currentUser}
+          onIntakeComplete={handleCompleteIntake}
+        />
+      );
+    }
+
+    if (appState === 'skills_assessment') {
+      return (
+        <SkillsAssessmentForm 
+          userProfile={currentUser}
+          onAssessmentComplete={handleCompleteSkillsAssessment}
+        />
+      );
+    }
+
+    if (appState === 'programs_hub') {
+      return (
+        <ProgramsHub 
+          onStartProgram={handleStartProgram}
+          onBack={handleBackFromPrograms}
+        />
+      );
+    }
+
+    if (appState === 'workout_preview') {
+      if (workoutType === 'program') {
         return (
-          <AuthScreen 
-            onLogin={handleLogin}
+          <ProgramWorkoutDisplay 
+            program={selectedProgram}
+            workout={currentWorkout}
+            onStart={handleStartWorkout}
+            onBackToDashboard={handleWorkoutExit}
+            loading={workoutLoading}
           />
         );
-      
-      case 'programs_hub':
-        return (
-          <ProgramsHub 
-            onStartProgram={handleStartProgram}
-            onBack={handleBackFromPrograms}
-          />
-        );
-      
-      case 'workout_preview':
+      } else {
         return (
           <WorkoutDisplay 
             workout={currentWorkout}
-            workoutType={workoutType}
-            selectedProgram={selectedProgram}
             onStart={handleStartWorkout}
-            onExit={handleWorkoutExit}
+            onBackToDashboard={handleWorkoutExit}
+            loading={workoutLoading}
           />
         );
-      
-      case 'workout_execution':
+      }
+    }
+
+    if (appState === 'workout_execution') {
+      if (workoutType === 'program') {
+        return (
+          <ProgramWorkoutExecution 
+            program={selectedProgram}
+            workout={currentWorkout}
+            session={currentSession}
+            onWorkoutComplete={handleWorkoutComplete}
+            onWorkoutExit={handleWorkoutExit}
+          />
+        );
+      } else {
         return (
           <WorkoutExecution 
             workout={currentWorkout}
-            workoutType={workoutType}
-            selectedProgram={selectedProgram}
+            session={currentSession}
             onComplete={handleWorkoutComplete}
-            onExit={handleWorkoutExit}
+            onWorkoutExit={handleWorkoutExit}
           />
         );
-      
-      case 'main':
-        return (
-          <div className="app-container">
-            <div className="main-content">
-              {renderMainContent()}
-            </div>
-            <BottomNavigation 
-              activeTab={activeTab} 
-              onTabChange={handleTabChange} 
-            />
-          </div>
-        );
-      
-      default:
-        return <div>Loading...</div>;
+      }
     }
+
+    // Main app with bottom navigation
+    return (
+      <div className="app-container">
+        <div className="main-content">
+          {renderMainContent()}
+        </div>
+        <BottomNavigation 
+          activeTab={activeTab} 
+          onTabChange={handleTabChange} 
+        />
+      </div>
+    );
   };
 
   // Render main app content based on active tab
@@ -196,6 +375,7 @@ const App = () => {
         return (
           <ProgressDashboard 
             user={currentUser}
+            progressStats={progressStats}
           />
         );
       case 'profile':
@@ -210,20 +390,79 @@ const App = () => {
     }
   };
 
-  // Placeholder workout generation functions (will be enhanced later)
+  // Fallback workout generation for error cases
+  const generateFallbackWorkout = (config) => {
+    return {
+      fallback: true,
+      message: "Generated basic workout due to connection issue",
+      workout: {
+        warmup: {
+          total_duration: Math.max(2, Math.floor((config.duration || 30) * 0.15)),
+          drills: [{
+            name: "Basic Warmup",
+            instructions: "Light stretching and movement to prepare for training",
+            duration: Math.max(2, Math.floor((config.duration || 30) * 0.15))
+          }]
+        },
+        main_work: {
+          total_duration: Math.floor((config.duration || 30) * 0.7),
+          drills: [{
+            name: "General Catching Practice",
+            instructions: "Work on basic catching fundamentals with available equipment",
+            duration: Math.floor((config.duration || 30) * 0.7)
+          }]
+        },
+        cooldown: {
+          total_duration: Math.max(1, Math.floor((config.duration || 30) * 0.15)),
+          drills: [{
+            name: "Light Stretching",
+            instructions: "Gentle stretching to cool down",
+            duration: Math.max(1, Math.floor((config.duration || 30) * 0.15))
+          }]
+        }
+      }
+    };
+  };
+
+  // Real workout generation from program data
   const generateProgramWorkout = (program) => {
-    // Placeholder: Generate workout based on program
+    // Calculate which session to show based on current week and day
+    const sessionIndex = ((program.currentWeek - 1) * 3) + (program.currentDay - 1);
+    const session = program.sessions?.[sessionIndex];
+    
+    if (!session) {
+      // Fallback for programs without detailed sessions
+      return {
+        id: Date.now(),
+        type: 'program',
+        programName: program.name,
+        title: `${program.name} - Week ${program.currentWeek}, Day ${program.currentDay}`,
+        duration: program.sessionDuration || 30,
+        exercises: [
+          { name: 'Program Exercise', duration: 20, description: 'Complete the assigned drills for this session' }
+        ]
+      };
+    }
+    
+    // Generate workout from real session data
     return {
       id: Date.now(),
       type: 'program',
       programName: program.name,
-      title: `${program.name} - Week ${program.currentWeek}, Day ${program.currentDay}`,
-      duration: program.sessionDuration || 30,
-      exercises: [
-        { name: 'Placeholder Exercise 1', duration: 10, description: 'Program-based exercise' },
-        { name: 'Placeholder Exercise 2', duration: 15, description: 'Program-based exercise' },
-        { name: 'Placeholder Exercise 3', duration: 5, description: 'Program-based exercise' }
-      ]
+      sessionId: session.id,
+      title: `${program.name} - Week ${session.week}, Session ${session.id}`,
+      sessionTitle: session.title,
+      duration: session.duration,
+      learningObjectives: session.learningObjectives,
+      exercises: session.drills.map(drill => ({
+        name: drill.name,
+        duration: drill.duration,
+        repetitions: drill.repetitions,
+        equipment: drill.equipment,
+        instructions: drill.instructions,
+        coachingPoints: drill.coachingPoints,
+        scenarios: drill.scenarios || []
+      }))
     };
   };
 
@@ -395,20 +634,116 @@ const TrainingHub = ({ onStartProgram, onStartOneOffWorkout }) => (
   </div>
 );
 
-const ProgressDashboard = ({ user }) => (
-  <div className="progress-dashboard">
-    <h2>Progress Dashboard</h2>
-    <p>Track your improvement over time</p>
-  </div>
-);
+// Progress Dashboard Component
+const ProgressDashboard = ({ user, progressStats }) => {
+  const stats = progressStats || {
+    total_workouts: 0,
+    current_streak: 0,
+    completed_workouts: 0
+  };
 
+  return (
+    <div className="progress-dashboard">
+      <div className="progress-header">
+        <h1>Your Progress</h1>
+        <p>Track your catching development journey</p>
+      </div>
+      
+      <div className="progress-stats">
+        <div className="stat-card">
+          <div className="stat-icon">🏆</div>
+          <div className="stat-value">{stats.completed_workouts}</div>
+          <div className="stat-label">Workouts Completed</div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-icon">⚡</div>
+          <div className="stat-value">{stats.current_streak}</div>
+          <div className="stat-label">Current Streak</div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-icon">📈</div>
+          <div className="stat-value">{stats.total_workouts}</div>
+          <div className="stat-label">Total Sessions</div>
+        </div>
+      </div>
+      
+      <div className="progress-section">
+        <h3>Recent Activity</h3>
+        <div className="activity-list">
+          {stats.last_workout_date ? (
+            <div className="activity-item">
+              <span className="activity-icon">🥎</span>
+              <div className="activity-details">
+                <div className="activity-title">Last Workout</div>
+                <div className="activity-time">
+                  {new Date(stats.last_workout_date).toLocaleDateString()}
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="activity-item">
+              <span className="activity-icon">🎯</span>
+              <div className="activity-details">
+                <div className="activity-title">Ready to start your first workout?</div>
+                <div className="activity-time">Let's get training!</div>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// User Profile Component
 const UserProfile = ({ user, onLogout }) => (
   <div className="user-profile">
-    <h2>Profile Settings</h2>
-    <p>Manage your account and preferences</p>
-    <button className="btn-secondary" onClick={onLogout}>
-      Logout
-    </button>
+    <div className="profile-header">
+      <div className="profile-avatar">
+        <span className="avatar-icon">👤</span>
+      </div>
+      <div className="profile-info">
+        <h2>{user?.name || 'Demo User'}</h2>
+        <p className="profile-email">{user?.email || 'demo@catchingcoach.com'}</p>
+      </div>
+    </div>
+    
+    <div className="profile-sections">
+      <div className="profile-section">
+        <h3>Account Settings</h3>
+        <div className="setting-item">
+          <span className="setting-icon">📧</span>
+          <span className="setting-label">Email Notifications</span>
+          <span className="setting-value">Enabled</span>
+        </div>
+        <div className="setting-item">
+          <span className="setting-icon">🔔</span>
+          <span className="setting-label">Workout Reminders</span>
+          <span className="setting-value">Daily at 6:00 PM</span>
+        </div>
+      </div>
+      
+      <div className="profile-section">
+        <h3>Training Preferences</h3>
+        <div className="setting-item">
+          <span className="setting-icon">⏱️</span>
+          <span className="setting-label">Default Session Length</span>
+          <span className="setting-value">30 minutes</span>
+        </div>
+        <div className="setting-item">
+          <span className="setting-icon">🎯</span>
+          <span className="setting-label">Skill Focus</span>
+          <span className="setting-value">All-Around</span>
+        </div>
+      </div>
+    </div>
+    
+    <div className="profile-actions">
+      <button className="logout-btn" onClick={onLogout}>
+        <span className="btn-icon">🚪</span>
+        Logout
+      </button>
+    </div>
   </div>
 );
 

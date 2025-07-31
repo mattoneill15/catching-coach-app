@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import './WorkoutExecution.css';
 
 const WorkoutExecution = ({ workout, onWorkoutComplete, onWorkoutExit }) => {
-  // State management for live workout execution
+  // State management for live workout execution - MUST be before any returns
   const [currentPhaseIndex, setCurrentPhaseIndex] = useState(0);
   const [currentDrillIndex, setCurrentDrillIndex] = useState(0);
   const [phaseTimeRemaining, setPhaseTimeRemaining] = useState(0);
@@ -14,15 +14,87 @@ const WorkoutExecution = ({ workout, onWorkoutComplete, onWorkoutExit }) => {
   const [completedDrills, setCompletedDrills] = useState(new Set());
   const [sessionNotes, setSessionNotes] = useState('');
 
-  // Timer refs for accurate timing
+  // Timer refs for accurate timing - MUST be before any returns
   const timerRef = useRef(null);
   const startTimeRef = useRef(null);
 
-  // Get current phase and drill data
-  const currentPhase = workout.phases[currentPhaseIndex];
-  const currentDrill = currentPhase?.drills[currentDrillIndex];
-  const totalPhases = workout.phases.length;
-  const totalWorkoutTime = workout.totalDuration * 60; // Convert to seconds
+  // Get current phase and drill data - handle different workout data structures
+  const phases = workout?.phases || [];
+  const currentPhase = phases[currentPhaseIndex];
+  const currentDrill = currentPhase?.drills?.[currentDrillIndex];
+  const totalPhases = phases.length;
+  const totalWorkoutTime = (workout?.totalDuration || workout?.duration || 30) * 60; // Convert to seconds
+
+  // Initialize phase timer when phase changes - MUST be before any returns
+  useEffect(() => {
+    if (currentPhase) {
+      setPhaseTimeRemaining(currentPhase.duration * 60); // Convert to seconds
+      setCurrentDrillIndex(0);
+      setShowDrillInstructions(true);
+    }
+  }, [currentPhaseIndex, currentPhase]);
+
+  // Main timer logic - MUST be before any returns
+  useEffect(() => {
+    if (isRunning && !isPaused) {
+      timerRef.current = setInterval(() => {
+        setTotalTimeElapsed(prev => prev + 1);
+        setPhaseTimeRemaining(prev => {
+          if (prev <= 1) {
+            handlePhaseComplete();
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    } else {
+      clearInterval(timerRef.current);
+    }
+
+    return () => clearInterval(timerRef.current);
+  }, [isRunning, isPaused]);
+
+  // Early return if no workout data - AFTER all hooks
+  if (!workout) {
+    return (
+      <div className="workout-execution-error">
+        <h2>No Workout Data</h2>
+        <p>Unable to start workout - no workout data available.</p>
+        <button className="btn-primary" onClick={() => {
+          console.log('🔙 WorkoutExecution back button clicked (no workout)');
+          console.log('onWorkoutExit function:', onWorkoutExit);
+          if (onWorkoutExit) {
+            onWorkoutExit();
+          } else {
+            console.error('❌ onWorkoutExit function is undefined!');
+          }
+        }}>
+          Back to Dashboard
+        </button>
+      </div>
+    );
+  }
+
+  // If no phases, show error state - AFTER all hooks
+  if (totalPhases === 0) {
+    return (
+      <div className="workout-execution-error">
+        <h2>Workout Structure Missing</h2>
+        <p>This workout doesn't have any phases configured. Please generate a new workout.</p>
+        <button className="btn-primary" onClick={() => {
+          console.log('🔙 WorkoutExecution back button clicked (no phases)');
+          console.log('onWorkoutExit function:', onWorkoutExit);
+          if (onWorkoutExit) {
+            onWorkoutExit();
+          } else {
+            console.error('❌ onWorkoutExit function is undefined!');
+          }
+        }}>
+          Back to Dashboard
+        </button>
+      </div>
+    );
+  }
 
   // Phase icons and colors (matching WorkoutDisplay component)
   const getPhaseIcon = (phaseType) => {
@@ -49,34 +121,7 @@ const WorkoutExecution = ({ workout, onWorkoutComplete, onWorkoutExit }) => {
     return colors[phaseType] || '#1565C0';
   };
 
-  // Initialize phase timer when phase changes
-  useEffect(() => {
-    if (currentPhase) {
-      setPhaseTimeRemaining(currentPhase.duration * 60); // Convert to seconds
-      setCurrentDrillIndex(0);
-      setShowDrillInstructions(true);
-    }
-  }, [currentPhaseIndex, currentPhase]);
 
-  // Main timer logic
-  useEffect(() => {
-    if (isRunning && !isPaused) {
-      timerRef.current = setInterval(() => {
-        setTotalTimeElapsed(prev => prev + 1);
-        setPhaseTimeRemaining(prev => {
-          if (prev <= 1) {
-            handlePhaseComplete();
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-    } else {
-      clearInterval(timerRef.current);
-    }
-
-    return () => clearInterval(timerRef.current);
-  }, [isRunning, isPaused]);
 
   // Start the workout
   const startWorkout = () => {

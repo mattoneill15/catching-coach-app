@@ -28,13 +28,118 @@ const ProgramsHub = ({ onStartProgram, onBack }) => {
       sessionsPerWeek: 3,
       difficulty: 'Beginner',
       description: 'Master the art of pitch framing with proper technique and positioning.',
-      longDescription: 'Learn the fundamentals of pitch framing that can turn balls into strikes. This program focuses on proper stance, glove positioning, subtle movements, and timing to help you become a framing expert.',
-      skills: ['Stance & Setup', 'Glove Positioning', 'Subtle Movements', 'Timing', 'Strike Zone Awareness'],
+      longDescription: 'Learn the fundamentals of pitch framing that can turn balls into strikes. This comprehensive 2-week program progresses from basic stance fundamentals to advanced velocity framing, covering setup selection, tennis ball receiving, and real baseball framing techniques.',
+      skills: ['Stance Selection', 'Setup Fundamentals', 'Tennis Ball Receiving', 'Coach Pitch Framing', 'Breaking Ball Patience', 'Velocity Framing'],
       icon: '🥎',
       color: '#00E676',
       gradient: 'linear-gradient(135deg, #00E676 0%, #00D96F 100%)',
       totalSessions: 6,
-      estimatedTime: '30-40 min per session'
+      estimatedTime: '30 min per session',
+      sessions: [
+        {
+          id: 1,
+          week: 1,
+          title: 'Introduction to Stances and Setups',
+          duration: 30,
+          learningObjectives: 'Catcher will understand the three different stances, how differing scenarios affect their setup, and will learn how to digest game information and translate that into the setup they will use for each pitch.',
+          drills: [
+            {
+              name: 'Random Setups',
+              duration: 20,
+              repetitions: 20,
+              equipment: 'None needed (optional helper calling out scenarios)',
+              instructions: 'Go through different scenarios in your head, or have a coach call them out to you. Given the scenario (Count, runner on base, and what pitch), you will get into your setup. Practice doing this for 20 repetitions, each time getting more comfortable selecting a setup to address the current scenario.',
+              coachingPoints: 'Focus on consistent setups. Each time you are using a certain setup, know your checkpoints. Make sure you understand the three stances: Traditional setup (both knees up, deep squat), Left knee down setup, Right knee down setup.',
+              scenarios: ['Nobody on base, less than 2 strikes', 'Nobody on base, 2 strikes', 'Runner on base']
+            }
+          ]
+        },
+        {
+          id: 2,
+          week: 1,
+          title: 'Basic Tennis Ball Receiving',
+          duration: 30,
+          learningObjectives: 'Catcher will learn how to catch and stick the ball.',
+          drills: [
+            {
+              name: 'Two Knees Down Tennis Ball Receiving',
+              duration: 15,
+              repetitions: '3 rounds of 20 reps',
+              equipment: 'Tennis balls, coach/helper optional',
+              instructions: 'Put both knees down on the ground. Start with your bare hand on the ground. If you have a coach, have a coach flip you the ball and you are going to work up from the ground, catch the ball, and then stick it. If you do not have a coach, toss the ball off of a wall and receive it.',
+              coachingPoints: 'Make only one move with your hand to the ball. When it comes off the ground, it is a quick and aggressive move to catch the ball. Try to eliminate as much body movement as possible. "Stick it" means you will hold the ball there right after you catch it.'
+            }
+          ]
+        },
+        {
+          id: 3,
+          week: 1,
+          title: 'Setups + Tennis Ball Receiving',
+          duration: 30,
+          learningObjectives: 'Catcher will practice changing stances and then will receive tennis balls from various different setups.',
+          drills: [
+            {
+              name: 'Normal Tennis Ball Receiving with Variable Setups',
+              duration: 20,
+              repetitions: '3 rounds of 20 reps',
+              equipment: 'Tennis balls, catchers mitt, coach/helper',
+              instructions: 'Coach/Helper will call out a scenario (i.e. runner on first, 2 strikes, Slider). Then the coach will throw the pitch and catcher will frame the pitch.',
+              coachingPoints: 'Focus on consistent setups. Take that feeling of one move to the ball from the knees down receiving. Minimize movement of the body.'
+            }
+          ]
+        },
+        {
+          id: 4,
+          week: 2,
+          title: 'Coach Pitch Framing',
+          duration: 30,
+          learningObjectives: 'Catcher will catch real baseballs thrown by a coach. Moving towards game-like pitching.',
+          drills: [
+            {
+              name: 'Coach Pitch Framing',
+              duration: 20,
+              repetitions: '3 rounds of 20 reps',
+              equipment: 'Baseballs, coach/helper, catchers mitt, catchers gear',
+              instructions: 'Choose a scenario, then use the corresponding setup. Stay here for a full round of 20 repetitions. Coach will throw pitches and catcher will frame pitches to the best of his ability. The variability of the live arm will replicate game-like variability.',
+              coachingPoints: 'Make sure you get the glove load done early. Limit body movement as much as possible. One move from the ground to the ball.'
+            }
+          ]
+        },
+        {
+          id: 5,
+          week: 2,
+          title: 'Long Slow Breaking Balls',
+          duration: 30,
+          learningObjectives: 'Catcher will learn how to wait and be patient while making the glove move as quick as possible.',
+          drills: [
+            {
+              name: 'Long Slow Breaking Balls',
+              duration: 20,
+              repetitions: '3 rounds of 20 reps',
+              equipment: 'Baseballs, catchers mitt, coach, pitching machine optional',
+              instructions: 'Get in your most comfortable setup. If you have a machine, set up 60 feet from machine. Put the machine on slow curveballs landing right behind the plate. If you have a coach, have him throw really big slow curveballs landing right behind the plate. Do your glove load, but wait as long as you can. When you move to catch the ball, it should be a very short and quick move with no body movement.',
+              coachingPoints: 'If you are having trouble waiting, put a cone 5 feet in front of you and don\'t move until the ball gets to that cone.'
+            }
+          ]
+        },
+        {
+          id: 6,
+          week: 2,
+          title: 'Velocity Framing',
+          duration: 30,
+          learningObjectives: 'Get used to catching high velocities.',
+          drills: [
+            {
+              name: 'Velocity Framing',
+              duration: 20,
+              repetitions: '3 rounds of 20 reps',
+              equipment: 'Pitching machine, baseballs, catchers gear, catchers glove, coach',
+              instructions: 'Get in any one of your stances. Set the machine to a hard fastball. Practice moving the pitch as quickly as you can while limiting body movement. Stick as best you can.',
+              coachingPoints: 'If you are having success catching pitches at first, you can move closer to the machine to make it more challenging. Can also work sides of the plate if you are looking for more of a challenge.'
+            }
+          ]
+        }
+      ]
     },
     {
       id: 'blocking-mastery',

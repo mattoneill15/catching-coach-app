@@ -3,12 +3,12 @@ import './WorkoutDisplay.css';
 
 const WorkoutDisplay = ({ 
   workout, 
-  userProfile, 
-  onStartWorkout, 
-  onRegenerateWorkout,
+  workoutType,
+  selectedProgram,
+  onStart, 
   onBackToDashboard 
 }) => {
-  const [expandedPhase, setExpandedPhase] = useState(null);
+  const [expandedDrill, setExpandedDrill] = useState(null);
   const [isStarting, setIsStarting] = useState(false);
 
   // Phase configurations for display
@@ -52,11 +52,15 @@ const WorkoutDisplay = ({
   };
 
   // Calculate total workout duration
-  const totalDuration = workout?.phases?.reduce((total, phase) => total + phase.duration, 0) || workout?.total_duration || 0;
+  const totalDuration = workout.duration || 30;
+  
+  // Handle different workout types
+  const isProgram = workoutType === 'program';
+  const exercises = workout.exercises || [];
 
   // Handle phase expansion
   const togglePhase = (phaseIndex) => {
-    setExpandedPhase(expandedPhase === phaseIndex ? null : phaseIndex);
+    setExpandedDrill(expandedDrill === phaseIndex ? null : phaseIndex);
   };
 
   // Handle start workout
@@ -65,7 +69,7 @@ const WorkoutDisplay = ({
     
     try {
       // Start the workout execution
-      await onStartWorkout(workout);
+      await onStart(workout);
     } catch (error) {
       console.error('Error starting workout:', error);
       alert('Error starting workout. Please try again.');
@@ -74,9 +78,10 @@ const WorkoutDisplay = ({
     }
   };
 
-  // Handle regenerate workout
+  // Handle regenerate workout (for one-off workouts)
   const handleRegenerateWorkout = () => {
-    onRegenerateWorkout();
+    // This will be implemented when we build the WorkoutGenerator
+    console.log('Regenerate workout - to be implemented');
   };
 
   if (!workout) {
@@ -108,7 +113,15 @@ const WorkoutDisplay = ({
           
           <button 
             className="back-button"
-            onClick={onBackToDashboard}
+            onClick={() => {
+              console.log('🔙 WorkoutDisplay back button clicked');
+              console.log('onBackToDashboard function:', onBackToDashboard);
+              if (onBackToDashboard) {
+                onBackToDashboard();
+              } else {
+                console.error('❌ onBackToDashboard function is undefined!');
+              }
+            }}
             disabled={isStarting}
           >
             ← Dashboard
@@ -146,7 +159,7 @@ const WorkoutDisplay = ({
             return (
               <div 
                 key={index}
-                className={`phase-card ${expandedPhase === index ? 'expanded' : ''}`}
+                className={`phase-card ${expandedDrill === index ? 'expanded' : ''}`}
                 onClick={() => togglePhase(index)}
               >
                 <div className="phase-header">
@@ -165,13 +178,13 @@ const WorkoutDisplay = ({
                   <div className="phase-duration">
                     <span className="duration-text">{phase.duration} min</span>
                     <span className="expand-icon">
-                      {expandedPhase === index ? '−' : '+'}
+                      {expandedDrill === index ? '−' : '+'}
                     </span>
                   </div>
                 </div>
 
                 {/* Expanded phase content */}
-                {expandedPhase === index && (
+                {expandedDrill === index && (
                   <div className="phase-content">
                     <div className="drills-list">
                       <h4>Drills in this phase:</h4>

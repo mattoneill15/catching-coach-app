@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import './AuthScreen.css';
+import api from '../services/api.js';
 
-const AuthScreen = ({ onAuthSuccess }) => {
+const AuthScreen = ({ onLogin, onRegister }) => {
   const [isLogin, setIsLogin] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -70,38 +71,26 @@ const AuthScreen = ({ onAuthSuccess }) => {
     setIsLoading(true);
 
     try {
-      // Mock authentication - always succeeds for demo purposes
-      await new Promise(resolve => setTimeout(resolve, 800));
-      
       if (isLogin) {
-        // Mock successful login
-        const userData = {
-          user_id: 'demo-user-' + Date.now(),
-          email: formData.email,
-          name: 'Demo User',
-          first_name: formData.email.split('@')[0] || 'Demo',
-          last_name: 'User',
-          needs_onboarding: false
-        };
-        
-        onAuthSuccess(userData, 'login');
-        
+        // Real login API call
+        await onLogin(formData.email);
       } else {
-        // Mock successful signup
+        // Real registration API call
         const userData = {
-          user_id: 'demo-user-' + Date.now(),
-          email: formData.email,
           name: `${formData.firstName} ${formData.lastName}`,
-          first_name: formData.firstName,
-          last_name: formData.lastName,
-          needs_onboarding: false // Skip onboarding for demo
+          email: formData.email,
+          age: 18, // Default age - could be added to form
+          experience_level: 'high_school', // Default - could be added to form
+          goals: [], // Will be set during onboarding
+          equipment_access: {}, // Will be set during onboarding
+          training_preferences: {} // Will be set during onboarding
         };
         
-        onAuthSuccess(userData, 'signup');
+        await onRegister(userData);
       }
     } catch (error) {
       console.error('Authentication error:', error);
-      setErrors({ general: 'Authentication failed. Please try again.' });
+      setErrors({ general: error.message || 'Authentication failed. Please try again.' });
     } finally {
       setIsLoading(false);
     }
