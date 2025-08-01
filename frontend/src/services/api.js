@@ -127,20 +127,21 @@ export const workoutAPI = {
   },
 
   // Start workout session
-  start: async (workoutData, workoutType = 'oneoff') => {
+  start: async (workoutData, workoutType = 'oneoff', programInfo = null) => {
     const response = await fetch(`${API_BASE_URL}/workouts/start`, {
       method: 'POST',
       headers: getAuthHeaders(),
-      body: JSON.stringify({ 
-        workout_data: workoutData, 
-        workout_type: workoutType 
+      body: JSON.stringify({
+        workout_data: workoutData,
+        workout_type: workoutType,
+        program_info: programInfo
       })
     });
     return handleResponse(response);
   },
 
   // Complete workout session
-  complete: async (sessionId, duration, drillsCompleted, skillsFocused, notes = '') => {
+  complete: async (sessionId, duration, drillsCompleted, skillsFocused, notes = '', workoutData = null, programInfo = null) => {
     const response = await fetch(`${API_BASE_URL}/workouts/complete`, {
       method: 'POST',
       headers: getAuthHeaders(),
@@ -149,7 +150,9 @@ export const workoutAPI = {
         duration_minutes: duration,
         drills_completed: drillsCompleted,
         skills_focused: skillsFocused,
-        completion_notes: notes
+        completion_notes: notes,
+        workout_data: workoutData,
+        program_info: programInfo
       })
     });
     return handleResponse(response);
@@ -158,6 +161,14 @@ export const workoutAPI = {
   // Get workout session details
   getSession: async (sessionId) => {
     const response = await fetch(`${API_BASE_URL}/workouts/session/${sessionId}`, {
+      headers: getAuthHeaders()
+    });
+    return handleResponse(response);
+  },
+
+  // Get program progress
+  getProgramProgress: async (programId) => {
+    const response = await fetch(`${API_BASE_URL}/workouts/program-progress/${programId}`, {
       headers: getAuthHeaders()
     });
     return handleResponse(response);

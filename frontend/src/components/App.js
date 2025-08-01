@@ -10,6 +10,10 @@ import ProgramWorkoutExecution from './ProgramWorkoutExecution.js';
 import ProgramsHub from './ProgramsHub.js';
 import IntakeQuestionnaire from './IntakeQuestionnaire.js';
 import SkillsAssessmentForm from './SkillsAssessmentForm.js';
+import WorkoutCompletionScreen from './WorkoutCompletionScreen.js';
+import WorkoutCompletionContinueScreen from './WorkoutCompletionContinueScreen.js';
+import ProgramCompletionScreen from './ProgramCompletionScreen.js';
+import WorkoutErrorScreen from './WorkoutErrorScreen.js';
 
 // Import API hooks and service
 import { useAuth, useWorkoutGeneration, useWorkoutSession, useSkillsAssessment, useUserProgress } from '../hooks/useAPI.js';
@@ -147,8 +151,20 @@ const App = () => {
   const handleStartProgram = (program) => {
     setSelectedProgram(program);
     setWorkoutType('program');
+    
+    // Store program tracking information
+    const programInfo = program.programInfo || {
+      program_id: program.id,
+      program_name: program.name,
+      session_number: 1,
+      session_title: 'Session 1'
+    };
+    
     // Generate workout based on program (placeholder for now)
     const programWorkout = generateProgramWorkout(program);
+    // Add program info to workout for tracking
+    programWorkout.programInfo = programInfo;
+    
     setCurrentWorkout(programWorkout);
     setShowProgramsHub(false);
     setAppState('workout_preview');
@@ -187,8 +203,14 @@ const App = () => {
 
   const handleStartWorkout = async () => {
     try {
-      // Start workout session in database
-      await startWorkoutSession(currentWorkout, workoutType);
+      // Start workout session in database with program tracking info
+      const programInfo = currentWorkout?.programInfo || null;
+      console.log('🏁 Starting workout session with program info:', {
+        workoutType,
+        programInfo,
+        currentWorkout: currentWorkout?.name || 'Unknown'
+      });
+      await startWorkoutSession(currentWorkout, workoutType, programInfo);
       setAppState('workout_execution');
     } catch (error) {
       console.error('Failed to start workout session:', error);
@@ -197,32 +219,75 @@ const App = () => {
     }
   };
 
-  const handleWorkoutComplete = async (workoutData) => {
+  const handleWorkoutComplete = async (completionData) => {
     try {
-      // Save workout completion to database
+      console.log('🏁 Starting enhanced workout completion process:', completionData);
+      
+      let completionResult = null;
+      
+      // Save workout completion to database with enhanced data
       if (currentSession) {
-        await completeWorkoutSession(
+        console.log('💾 Completing workout session with enhanced data:', {
+          sessionId: currentSession.session_id,
+          completionData
+        });
+        
+        completionResult = await completeWorkoutSession(
           currentSession.session_id,
-          workoutData.duration,
-          workoutData.drillsCompleted || [],
-          workoutData.skillsFocused || [],
-          workoutData.notes || ''
+          completionData
         );
+        
+        console.log('✅ Workout session completed successfully:', completionResult);
       }
       
       // Refresh progress stats
       await fetchProgressStats();
       
-      console.log('Workout completed and saved:', workoutData);
+      // Handle program progression if applicable
+      if (completionResult?.program_progress) {
+        const { program_progress, next_workout } = completionResult;
+        
+        console.log('📈 Program progression detected:', program_progress);
+        
+        if (program_progress.program_completed) {
+          // Program completed - show celebration
+          setAppState('program_completed');
+          setTimeout(() => {
+            setAppState('main');
+            setActiveTab('progress');
+          }, 3000);
+        } else if (next_workout) {
+          // Next workout available - show option to continue
+          setCurrentWorkout(next_workout);
+          setAppState('workout_completed_continue');
+          return; // Don't clear state yet
+        }
+      }
+      
+      // Show completion success screen
+      setAppState('workout_completed');
+      
+      // Auto-navigate back to dashboard after showing success
+      setTimeout(() => {
+        setAppState('main');
+        setActiveTab('home');
+      }, 2500);
+      
+      console.log('🎯 Workout completion process finished');
+      
     } catch (error) {
-      console.error('Failed to save workout completion:', error);
+      console.error('❌ Failed to complete workout:', error);
+      // Show error state briefly then return to dashboard
+      setAppState('workout_error');
+      setTimeout(() => {
+        setAppState('main');
+        setActiveTab('home');
+      }, 2000);
     } finally {
-      // Return to main dashboard regardless of save success
-      setAppState('main');
+      // Clear current session
       setCurrentWorkout(null);
       setSelectedProgram(null);
       setWorkoutType(null);
-      setActiveTab('home');
     }
   };
 
@@ -331,11 +396,59 @@ const App = () => {
           <WorkoutExecution 
             workout={currentWorkout}
             session={currentSession}
-            onComplete={handleWorkoutComplete}
+            onWorkoutComplete={handleWorkoutComplete}
             onWorkoutExit={handleWorkoutExit}
           />
         );
       }
+    }
+
+    if (appState === 'workout_completed') {
+      return (
+        <WorkoutCompletionScreen 
+          onContinue={() => {
+            setAppState('main');
+            setActiveTab('home');
+          }}
+        />
+      );
+    }
+
+    if (appState === 'workout_completed_continue') {
+      return (
+        <WorkoutCompletionContinueScreen 
+          nextWorkout={currentWorkout}
+          onContinueProgram={() => {
+            setAppState('workout_preview');
+          }}
+          onReturnHome={() => {
+            setAppState('main');
+            setActiveTab('home');
+          }}
+        />
+      );
+    }
+
+    if (appState === 'program_completed') {
+      return (
+        <ProgramCompletionScreen 
+          onViewProgress={() => {
+            setAppState('main');
+            setActiveTab('progress');
+          }}
+        />
+      );
+    }
+
+    if (appState === 'workout_error') {
+      return (
+        <WorkoutErrorScreen 
+          onRetry={() => {
+            setAppState('main');
+            setActiveTab('home');
+          }}
+        />
+      );
     }
 
     // Main app with bottom navigation
@@ -362,6 +475,7 @@ const App = () => {
             onStartProgram={handleShowProgramsHub}
             onStartOneOffWorkout={handleStartOneOffWorkout}
             onLogout={handleLogout}
+            progressStats={progressStats}
           />
         );
       case 'training':
@@ -489,12 +603,44 @@ const App = () => {
   );
 };
 
-// Dashboard Component (Home Tab) - Updated for simplified flow
-const Dashboard = ({ user, onStartProgram, onStartOneOffWorkout, onLogout }) => {
-  const [currentStreak, setCurrentStreak] = useState(3); // Mock data - would come from backend
-  const [totalWorkouts, setTotalWorkouts] = useState(12); // Mock data
-  const [weeklyGoal, setWeeklyGoal] = useState(4); // Mock data
-  const [weeklyProgress, setWeeklyProgress] = useState(2); // Mock data
+// Dashboard Component (Home Tab) - Enhanced with workout completion data
+const Dashboard = ({ user, onStartProgram, onStartOneOffWorkout, onLogout, progressStats }) => {
+  const [recentWorkouts, setRecentWorkouts] = useState([]);
+  const [programProgress, setProgramProgress] = useState(null);
+  const [nextWorkout, setNextWorkout] = useState(null);
+  const { fetchHistory } = useUserProgress();
+  
+  // Load recent workout history and program progress on component mount
+  useEffect(() => {
+    const loadDashboardData = async () => {
+      try {
+        // Get recent workout history
+        const historyResponse = await fetchHistory(5, 0);
+        if (historyResponse?.workouts) {
+          setRecentWorkouts(historyResponse.workouts);
+        }
+        
+        // Check for active program progress
+        // This would typically come from a program progress API endpoint
+        // For now, we'll simulate it based on recent workouts
+        const programWorkouts = historyResponse?.workouts?.filter(w => w.workout_type === 'program');
+        if (programWorkouts && programWorkouts.length > 0) {
+          const latestProgram = programWorkouts[0];
+          // Simulate program progress data
+          setProgramProgress({
+            program_name: latestProgram.program_name || 'Active Program',
+            completed_sessions: programWorkouts.length,
+            total_sessions: 12,
+            next_session: programWorkouts.length + 1
+          });
+        }
+      } catch (error) {
+        console.error('Failed to load dashboard data:', error);
+      }
+    };
+    
+    loadDashboardData();
+  }, [fetchHistory]);
 
   const today = new Date().toLocaleDateString('en-US', { 
     weekday: 'long', 
@@ -502,6 +648,13 @@ const Dashboard = ({ user, onStartProgram, onStartOneOffWorkout, onLogout }) => 
     month: 'long', 
     day: 'numeric' 
   });
+  
+  // Calculate stats from progressStats prop
+  const stats = progressStats || {
+    current_streak: 0,
+    total_workouts: 0,
+    completed_workouts: 0
+  };
 
   return (
     <div className="dashboard">
@@ -519,7 +672,7 @@ const Dashboard = ({ user, onStartProgram, onStartOneOffWorkout, onLogout }) => 
         <div className="stat-card streak">
           <div className="stat-icon">🔥</div>
           <div className="stat-content">
-            <h3>{currentStreak}</h3>
+            <h3>{stats.current_streak}</h3>
             <p>Day Streak</p>
           </div>
         </div>
@@ -527,7 +680,7 @@ const Dashboard = ({ user, onStartProgram, onStartOneOffWorkout, onLogout }) => 
         <div className="stat-card workouts">
           <div className="stat-icon">💪</div>
           <div className="stat-content">
-            <h3>{totalWorkouts}</h3>
+            <h3>{stats.completed_workouts}</h3>
             <p>Total Workouts</p>
           </div>
         </div>
@@ -535,11 +688,71 @@ const Dashboard = ({ user, onStartProgram, onStartOneOffWorkout, onLogout }) => 
         <div className="stat-card weekly">
           <div className="stat-icon">📊</div>
           <div className="stat-content">
-            <h3>{weeklyProgress}/{weeklyGoal}</h3>
+            <h3>{recentWorkouts.length}/4</h3>
             <p>This Week</p>
           </div>
         </div>
       </div>
+
+      {/* Program Progress Section */}
+      {programProgress && (
+        <div className="program-progress-section">
+          <h2>Program Progress</h2>
+          <div className="program-card">
+            <div className="program-header">
+              <h3>{programProgress.program_name}</h3>
+              <span className="progress-badge">
+                {programProgress.completed_sessions}/{programProgress.total_sessions} Sessions
+              </span>
+            </div>
+            <div className="progress-bar">
+              <div 
+                className="progress-fill" 
+                style={{ width: `${(programProgress.completed_sessions / programProgress.total_sessions) * 100}%` }}
+              ></div>
+            </div>
+            <div className="next-session">
+              <span className="next-label">Next:</span>
+              <span className="next-title">Session {programProgress.next_session}</span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Recent Workouts Section */}
+      {recentWorkouts.length > 0 && (
+        <div className="recent-workouts-section">
+          <h2>Recent Activity</h2>
+          <div className="workouts-list">
+            {recentWorkouts.slice(0, 3).map((workout, index) => (
+              <div key={index} className="workout-item">
+                <div className="workout-icon">
+                  {workout.workout_type === 'program' ? '📋' : '🥎'}
+                </div>
+                <div className="workout-details">
+                  <div className="workout-title">
+                    {workout.workout_type === 'program' 
+                      ? `${workout.program_name || 'Program'} Session`
+                      : 'One-off Workout'
+                    }
+                  </div>
+                  <div className="workout-meta">
+                    <span className="workout-date">
+                      {new Date(workout.completed_at).toLocaleDateString()}
+                    </span>
+                    <span className="workout-duration">
+                      {workout.actual_duration || workout.duration_minutes} min
+                    </span>
+                  </div>
+                </div>
+                <div className="workout-status">
+                  <span className="status-badge completed">✓</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="main-action">
         <h2>Ready to Train?</h2>

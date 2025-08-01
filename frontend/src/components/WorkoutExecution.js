@@ -162,15 +162,58 @@ const WorkoutExecution = ({ workout, onWorkoutComplete, onWorkoutExit }) => {
 
   // Handle workout completion
   const handleWorkoutComplete = () => {
+    console.log('🏁 Workout completion initiated');
+    console.log('Total time elapsed:', totalTimeElapsed);
+    console.log('Completed drills:', Array.from(completedDrills));
+    console.log('Session notes:', sessionNotes);
+    
+    // Stop the timer
     setIsRunning(false);
-    const workoutData = {
-      workoutId: workout.id,
-      totalDuration: totalTimeElapsed,
-      completedDrills: Array.from(completedDrills),
+    clearInterval(timerRef.current);
+    
+    // Extract skills focused from completed drills
+    const skillsFocused = [];
+    const completedDrillsArray = Array.from(completedDrills);
+    
+    // Analyze completed drills to determine skills practiced
+    workout.phases?.forEach(phase => {
+      phase.drills?.forEach(drill => {
+        if (completedDrillsArray.includes(drill.name)) {
+          // Map drill categories to skill categories
+          const skillMapping = {
+            'receiving': ['receiving_glove_move', 'receiving_setups', 'receiving_presentation'],
+            'throwing': ['throwing_footwork', 'throwing_exchange', 'throwing_accuracy'],
+            'blocking': ['blocking_overall'],
+            'education': ['education_pitch_calling', 'education_scouting_reports']
+          };
+          
+          const drillSkills = skillMapping[drill.category] || [drill.category];
+          skillsFocused.push(...drillSkills);
+        }
+      });
+    });
+    
+    // Remove duplicates
+    const uniqueSkillsFocused = [...new Set(skillsFocused)];
+    
+    // Prepare completion data
+    const completionData = {
+      totalTime: Math.floor(totalTimeElapsed / 60), // Convert to minutes
+      completedDrills: completedDrillsArray,
+      skillsFocused: uniqueSkillsFocused,
       sessionNotes: sessionNotes,
-      completedAt: new Date().toISOString()
+      completedPhases: currentPhaseIndex + 1,
+      totalPhases: totalPhases,
+      workoutData: workout,
+      programInfo: workout.program_info || null
     };
-    onWorkoutComplete(workoutData);
+    
+    console.log('🔄 Calling onWorkoutComplete with enhanced data:', completionData);
+    if (onWorkoutComplete) {
+      onWorkoutComplete(completionData);
+    } else {
+      console.error('❌ onWorkoutComplete function is undefined!');
+    }
   };
 
   // Skip to next drill

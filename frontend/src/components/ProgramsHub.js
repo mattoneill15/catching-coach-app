@@ -1,8 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './ProgramsHub.css';
+import { workoutAPI } from '../services/api.js';
 
 const ProgramsHub = ({ onStartProgram, onBack }) => {
   const [selectedProgram, setSelectedProgram] = useState(null);
+  const [programProgress, setProgramProgress] = useState({});
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   // Program data - structured catching training programs
   const programs = [
@@ -173,17 +176,79 @@ const ProgramsHub = ({ onStartProgram, onBack }) => {
     }
   ];
 
+  // Fetch program progress on component mount
+  useEffect(() => {
+    const fetchProgramProgress = async () => {
+      try {
+        const progressData = {};
+        for (const program of programs) {
+          try {
+            console.log(`📊 Fetching progress for program: ${program.id}`);
+            const progress = await workoutAPI.getProgramProgress(program.id);
+            console.log(`✅ Progress data for ${program.id}:`, progress);
+            progressData[program.id] = progress;
+          } catch (error) {
+            console.log(`⚠️ No progress found for ${program.id}, using defaults:`, error.message);
+            // If no progress found, set default
+            progressData[program.id] = {
+              program_id: program.id,
+              completed_sessions: [],
+              next_session_number: 1,
+              total_completed: 0
+            };
+          }
+        }
+        console.log('📈 Final progress data:', progressData);
+        setProgramProgress(progressData);
+      } catch (error) {
+        console.error('Failed to fetch program progress:', error);
+      }
+    };
+
+    fetchProgramProgress();
+  }, [refreshTrigger]); // Add refreshTrigger dependency
+
+  // Function to refresh progress data (can be called externally)
+  const refreshProgress = () => {
+    setRefreshTrigger(prev => prev + 1);
+  };
+
+  // Always refresh progress data when component mounts (after workout completion)
+  useEffect(() => {
+    console.log('🔄 ProgramsHub mounted - refreshing progress data');
+    refreshProgress();
+  }, []); // Run on every mount to ensure fresh data
+
   const handleProgramSelect = (program) => {
     setSelectedProgram(program);
   };
 
   const handleStartProgram = () => {
     if (selectedProgram) {
+      const progress = programProgress[selectedProgram.id] || { next_session_number: 1 };
+      const nextSession = selectedProgram.sessions?.find(s => s.id === progress.next_session_number);
+      
+      const programInfo = {
+        program_id: selectedProgram.id,
+        program_name: selectedProgram.name,
+        session_number: progress.next_session_number,
+        session_title: nextSession?.title || `Session ${progress.next_session_number}`
+      };
+      
+      console.log('🚀 Starting program with info:', {
+        programId: selectedProgram.id,
+        currentProgress: progress,
+        programInfo,
+        nextSession
+      });
+      
       onStartProgram({
         ...selectedProgram,
         currentWeek: 1,
         currentDay: 1,
-        sessionDuration: parseInt(selectedProgram.estimatedTime)
+        sessionDuration: parseInt(selectedProgram.estimatedTime),
+        // Add program tracking info
+        programInfo
       });
     }
   };
@@ -242,6 +307,31 @@ const ProgramsHub = ({ onStartProgram, onBack }) => {
                   <span className="stat-text">{program.totalSessions} sessions</span>
                 </div>
               </div>
+
+              {/* Progress indicator */}
+              {programProgress[program.id] && (
+                <div className="program-progress">
+                  <div className="progress-bar">
+                    <div 
+                      className="progress-fill" 
+                      style={{ 
+                        width: `${(programProgress[program.id].total_completed / program.totalSessions) * 100}%`,
+                        background: program.gradient
+                      }}
+                    ></div>
+                  </div>
+                  <div className="progress-text">
+                    {programProgress[program.id].total_completed > 0 ? (
+                      <span>
+                        {programProgress[program.id].total_completed}/{program.totalSessions} completed • 
+                        Next: Session {programProgress[program.id].next_session_number}
+                      </span>
+                    ) : (
+                      <span>Ready to start</span>
+                    )}
+                  </div>
+                </div>
+              )}
 
               <div className="program-skills">
                 <h4>Skills You'll Develop:</h4>
@@ -305,8 +395,17 @@ const ProgramsHub = ({ onStartProgram, onBack }) => {
             </div>
 
             <button className="start-program-btn-detailed" onClick={handleStartProgram}>
-              <span className="btn-icon">🚀</span>
-              Start {selectedProgram.name}
+              {programProgress[selectedProgram.id]?.total_completed > 0 ? (
+                <>
+                  <span className="btn-icon">▶️</span>
+                  Continue Session {programProgress[selectedProgram.id].next_session_number}
+                </>
+              ) : (
+                <>
+                  <span className="btn-icon">🚀</span>
+                  Start {selectedProgram.name}
+                </>
+              )}
             </button>
           </div>
         </div>

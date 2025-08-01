@@ -100,16 +100,54 @@ router.get('/workout-history', authenticateToken, async (req, res) => {
     const { limit = 10, offset = 0 } = req.query;
 
     const result = await query(
-      `SELECT session_id, workout_type, duration_minutes, completion_status,
-              drills_completed, skills_focused, created_at
+      `SELECT session_id, workout_type, planned_duration, actual_duration, 
+              completion_status, completed_drills, skills_focused, 
+              started_at, completed_at, user_notes
        FROM workout_sessions 
-       WHERE user_id = $1 
-       ORDER BY created_at DESC 
+       WHERE user_id = $1 AND completion_status = 'completed'
+       ORDER BY completed_at DESC 
        LIMIT $2 OFFSET $3`,
       [req.user.userId, limit, offset]
     );
 
-    res.json({ workouts: result.rows });
+    // Transform the data to match frontend expectations
+    const workouts = result.rows.map(workout => {
+      let programInfo = null;
+      
+      // Try to parse program info from user_notes if it's a program workout
+      if (workout.workout_type === 'program' && workout.user_notes) {
+        try {
+          const notes = JSON.parse(workout.user_notes);
+          if (notes.program_id) {
+            programInfo = {
+              program_id: notes.program_id,
+              program_name: notes.program_name,
+              session_number: notes.session_number,
+              session_title: notes.session_title
+            };
+          }
+        } catch (e) {
+          // Ignore JSON parse errors
+        }
+      }
+      
+      return {
+        session_id: workout.session_id,
+        workout_type: workout.workout_type,
+        duration_minutes: workout.actual_duration || workout.planned_duration,
+        actual_duration: workout.actual_duration,
+        planned_duration: workout.planned_duration,
+        completion_status: workout.completion_status,
+        completed_drills: workout.completed_drills,
+        skills_focused: workout.skills_focused,
+        started_at: workout.started_at,
+        completed_at: workout.completed_at,
+        program_name: programInfo?.program_name,
+        session_title: programInfo?.session_title
+      };
+    });
+
+    res.json({ workouts });
 
   } catch (error) {
     console.error('Get workout history error:', error);
@@ -126,7 +164,7 @@ router.get('/progress-stats', authenticateToken, async (req, res) => {
          COUNT(*) as total_workouts,
          COUNT(CASE WHEN completion_status = 'completed' THEN 1 END) as completed_workouts,
          AVG(actual_duration) as avg_duration,
-         MAX(created_at) as last_workout_date
+         MAX(completed_at) as last_workout_date
        FROM workout_sessions 
        WHERE user_id = $1`,
       [req.user.userId]
@@ -135,11 +173,11 @@ router.get('/progress-stats', authenticateToken, async (req, res) => {
     // Get current streak (consecutive days with workouts)
     const streakQuery = `
       WITH daily_workouts AS (
-        SELECT DATE(created_at) as workout_date
+        SELECT DATE(completed_at) as workout_date
         FROM workout_sessions 
-        WHERE user_id = $1 AND completion_status = 'completed'
-        GROUP BY DATE(created_at)
-        ORDER BY DATE(created_at) DESC
+        WHERE user_id = $1 AND completion_status = 'completed' AND completed_at IS NOT NULL
+        GROUP BY DATE(completed_at)
+        ORDER BY DATE(completed_at) DESC
       ),
       streak_calc AS (
         SELECT workout_date,

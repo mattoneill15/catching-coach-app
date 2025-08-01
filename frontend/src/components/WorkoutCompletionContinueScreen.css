@@ -1,0 +1,167 @@
+.workout-completion-continue-screen {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+  color: white;
+  text-align: center;
+  padding: 20px;
+}
+
+.completion-continue-content {
+  max-width: 450px;
+  width: 100%;
+  animation: slideInUp 0.6s ease-out;
+}
+
+.completion-icon {
+  margin-bottom: 24px;
+}
+
+.success-emoji {
+  font-size: 4rem;
+  animation: bounce 1s ease-in-out infinite alternate;
+}
+
+.completion-title {
+  font-size: 2.5rem;
+  font-weight: bold;
+  margin-bottom: 16px;
+  color: #ffffff;
+}
+
+.completion-message {
+  font-size: 1.1rem;
+  margin-bottom: 32px;
+  color: #e8f4f8;
+  line-height: 1.6;
+}
+
+.program-progress {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 24px;
+  margin-bottom: 32px;
+  backdrop-filter: blur(10px);
+}
+
+.progress-info h3 {
+  margin: 0 0 8px 0;
+  font-size: 1.3rem;
+  color: #ffffff;
+}
+
+.progress-info p {
+  margin: 0 0 20px 0;
+  color: #e8f4f8;
+}
+
+.next-workout-preview {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.next-workout-preview h4 {
+  margin: 0 0 12px 0;
+  font-size: 1.1rem;
+  color: #ffffff;
+}
+
+.workout-details {
+  display: flex;
+  justify-content: space-around;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.workout-duration,
+.workout-focus {
+  font-size: 0.9rem;
+  color: #e8f4f8;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.action-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.continue-btn,
+.home-btn {
+  width: 100%;
+  padding: 16px 24px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.continue-btn {
+  background: #ffffff;
+  color: #4facfe;
+}
+
+.continue-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+  background: #f8f9ff;
+}
+
+.home-btn {
+  background: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.home-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: translateY(-1px);
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes bounce {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-10px);
+  }
+}
+
+@media (max-width: 480px) {
+  .completion-title {
+    font-size: 2rem;
+  }
+  
+  .completion-message {
+    font-size: 1rem;
+  }
+  
+  .success-emoji {
+    font-size: 3rem;
+  }
+  
+  .workout-details {
+    flex-direction: column;
+    gap: 8px;
+  }
+}

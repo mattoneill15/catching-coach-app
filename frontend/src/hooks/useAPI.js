@@ -129,14 +129,32 @@ export const useWorkoutSession = () => {
   const { execute: startSession, loading: startLoading } = useAPICall(api.workout.start);
   const { execute: completeSession, loading: completeLoading } = useAPICall(api.workout.complete);
 
-  const start = useCallback(async (workoutData, workoutType = 'oneoff') => {
-    const response = await startSession(workoutData, workoutType);
+  const start = useCallback(async (workoutData, workoutType = 'oneoff', programInfo = null) => {
+    const response = await startSession(workoutData, workoutType, programInfo);
     setCurrentSession(response.session);
     return response;
   }, [startSession]);
 
-  const complete = useCallback(async (sessionId, duration, drillsCompleted, skillsFocused, notes = '') => {
-    const response = await completeSession(sessionId, duration, drillsCompleted, skillsFocused, notes);
+  const complete = useCallback(async (sessionId, completionData) => {
+    const {
+      totalTime,
+      completedDrills,
+      skillsFocused,
+      sessionNotes,
+      workoutData,
+      programInfo
+    } = completionData;
+    
+    const response = await completeSession(
+      sessionId, 
+      totalTime, 
+      completedDrills, 
+      skillsFocused, 
+      sessionNotes,
+      workoutData,
+      programInfo
+    );
+    
     setCurrentSession(null);
     return response;
   }, [completeSession]);

@@ -92,15 +92,25 @@ const ProgramWorkoutExecution = ({ workout, onWorkoutComplete, onWorkoutExit }) 
   // Handle workout completion
   const handleWorkoutComplete = () => {
     setIsRunning(false);
+    // Convert elapsed time from seconds to minutes for backend
+    const durationMinutes = Math.round(totalTimeElapsed / 60);
+    
     const workoutData = {
       workoutId: workout.id || 'program-workout',
-      sessionTitle: workout.sessionTitle,
-      programName: workout.programName,
-      totalDuration: totalTimeElapsed,
+      duration: durationMinutes, // Backend expects 'duration' in minutes
+      totalDuration: totalTimeElapsed, // Keep for compatibility
       completedDrills: Array.from(completedDrills),
+      drillsCompleted: Array.from(completedDrills), // Backend expects 'drillsCompleted'
+      skillsFocused: [], // Add required field
       sessionNotes: sessionNotes,
-      completedAt: new Date().toISOString()
+      notes: sessionNotes, // Backend expects 'notes'
+      completedAt: new Date().toISOString(),
+      // Add program info if available
+      sessionTitle: workout?.sessionTitle || workout?.programInfo?.session_title || 'Program Session',
+      programName: workout?.programName || workout?.programInfo?.program_name || 'Program Workout'
     };
+    
+    console.log('🎯 ProgramWorkoutExecution completing with data:', workoutData);
     onWorkoutComplete(workoutData);
   };
 

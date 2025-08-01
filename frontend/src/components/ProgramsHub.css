@@ -197,33 +197,69 @@
 }
 
 /* Program Skills */
+.program-skills {
+  margin-top: 16px;
+}
+
 .program-skills h4 {
-  margin: 0 0 12px 0;
-  font-size: 14px;
-  color: #FFFFFF;
-  font-weight: 600;
+  margin: 0 0 8px 0;
+  font-size: 13px;
+  color: #B0B0B0;
+  font-weight: 500;
 }
 
 .skills-list {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 6px;
 }
 
 .skill-tag {
-  background: linear-gradient(135deg, #333 0%, #444 100%);
-  color: #FFFFFF;
+  background: rgba(255, 255, 255, 0.1);
+  color: #E0E0E0;
   padding: 4px 8px;
-  border-radius: 6px;
+  border-radius: 12px;
   font-size: 11px;
   font-weight: 500;
-  border: 1px solid #555;
+  border: 1px solid rgba(255, 255, 255, 0.15);
 }
 
 .skill-tag.more {
-  background: linear-gradient(135deg, #00E676 0%, #00D96F 100%);
-  color: #0A0A0A;
-  font-weight: 600;
+  background: rgba(255, 193, 7, 0.2);
+  color: #FFC107;
+  border-color: rgba(255, 193, 7, 0.3);
+}
+
+/* Program Progress */
+.program-progress {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.progress-bar {
+  width: 100%;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.progress-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+.progress-text {
+  font-size: 12px;
+  color: #B0B0B0;
+  text-align: center;
+}
+
+.progress-text span {
+  font-weight: 500;
 }
 
 /* Program Details Section */
